@@ -1,0 +1,43 @@
+.js-form__err-animation {
+    animation: shake 150ms ease-in-out;
+}
+
+.form__error-wrapper {
+/*// display: none;*/
+    justify-content: center;
+    max-width: calc(100% - 2em);
+    margin: 0 auto;
+    margin-bottom: 1em;
+}
+
+.form__error {
+/*// display: none;*/
+    border-radius: 0.5em;
+    background-color: #FB4F4F;
+    color: white;
+    margin: 0;
+    padding: 0.5em 1em;
+    font-size: 0.8em;
+    font-family: 'Helvetica Neue Light', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    user-select: none;
+}
+
+.js-form__err .form__error-wrapper {
+    display: flex;
+}
+
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(10px);
+    }
+    75% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}

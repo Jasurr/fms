@@ -1,0 +1,47 @@
+
+
+.table-container {
+    background-color: #FFFFFF;
+    padding: 0;
+}
+
+.table > thead > tr > th {
+    border-bottom-width: 1px;
+    font-size: 14px;
+    font-family: Regular;
+    text-transform: none;
+    color: #fcfcff;
+    font-weight: 200;
+    padding-bottom: 5px;
+}
+
+.caret {
+    color: #FFFFFF;
+}
+.header-text {
+    padding-left: 30px;
+}
+.header-text> h4 {
+    margin: 0!important;
+    margin-bottom: 10px!important;
+}
+.table-right-container {
+    border-left: 1px solid #000000;
+    padding: 5px;
+    margin: 0;
+    height: 100%;
+}
+.table-right-container button {
+    width: 5px !important;
+    height: 10px;
+    background-color: #FFFFFF;
+}
+
+.editBtn {
+    padding: 0!important;
+    border: 0;
+}
+.editBtn > img {
+    padding: 0!important;
+    margin: 0!important;
+}

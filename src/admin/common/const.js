@@ -1,0 +1,38 @@
+
+//USER LIST (EMPLOYEE LIST)
+ export const USER_LIST = "USER_LIST";
+export const ADD_USER_LIST = "ADD_USER_LIST";
+
+
+//   REGION
+export const REGION_LIST = "REGION_LIST";
+export const ADD_REGION_LIST = "ADD_REGION_LIST";
+
+
+//   TARIFF
+export const TARIFF_LIST = "TARIFF_LIST";
+export const ADD_TARIFF_LIST = "ADD_TARIFF_LIST";
+
+//   TARIFF
+export const BOX_LIST = "BOX_LIST";
+export const ADD_BOX_LIST = "ADD_BOX_LIST";
+
+//   PACKAGE
+export const PACKAGE_LIST = "PACKAGE_LIST";
+export const ADD_PACKAGE_LIST = "ADD_PACKAGE_LIST";
+
+//   INVOICE
+export const INVOICE_LIST = "INVOICE_LIST";
+export const ADD_INVOICE_LIST = "ADD_INVOICE_LIST";
+
+//   METHOD
+export const METHOD_LIST = "METHOD_LIST";
+export const ADD_METHOD_LIST = "ADD_METHOD_LIST";
+
+//   SERVICE
+export const SERVICE_LIST = "SERVICE_LIST";
+export const ADD_SERVICE_LIST = "ADD_SERVICE_LIST";
+
+//   FEEDBACK
+export const FEEDBACK_LIST = "FEEDBACK_LIST";
+export const ADD_FEEDBACK_LIST = "ADD_FEEDBACK_LIST";

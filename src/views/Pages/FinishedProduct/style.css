@@ -1,0 +1,19 @@
+
+
+.menu-img {
+    cursor: pointer;
+}
+.menu-group-status {
+    display: none;
+}
+
+.my-class {
+    overflow: inherit !important;
+}
+/*.react-bs-select-all {*/
+    /*width: 20!important;*/
+/*}*/
+
+/*.table-container> div> div> div> table > tbody> tr> td>  input {*/
+    /*width: 20px!important;*/
+/*}*/
