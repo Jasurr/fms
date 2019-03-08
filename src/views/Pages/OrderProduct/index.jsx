@@ -6,18 +6,17 @@ import './styles.css'
 import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row} from "react-bootstrap";
 import {formValueSelector, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
-import Dostavka from "./Dostovka";
 import TableList from "./TableList/TableList";
 import ReactToPrint from "react-to-print";
 import ComponentToPrint from "./Print";
 import {clearProducts} from "../reducer";
 import Loading from "../../../components/Loading";
 import NotificationSystem from "react-notification-system";
-import moment from "moment";
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
 import {cities, regions} from "../../../assets/Data/data";
 import Autocomplete from 'react-autocomplete'
+import moment from 'moment'
 var Barcode = require('react-barcode');
 
 //eslint-disable import/first
@@ -59,7 +58,6 @@ function finalWeight(products) {
 
 
 class Invoice extends Component {
-
     constructor(props) {
         super(props)
         this.state = {
@@ -74,24 +72,21 @@ class Invoice extends Component {
             sum: 0,
             final_summ: 0,
             _notificationSystem: null,
-            ...this.props.invoceData
+            ...this.props.invoceData,
+            date: this.props.invoceData.created_date && this.props.invoceData.created_date.slice(0, 10),
+            time: this.props.invoceData.created_date && this.props.invoceData.created_date.slice(11, 16)
         }
         this.handleScan = this.handleScan.bind(this)
         this.finalSumm = this.finalSumm.bind(this)
-
-
     }
 
     componentDidMount() {
         const {dispatch} = this.props
-
         Routines.admin.getRegions({}, dispatch)
         Routines.admin.tarifList({}, dispatch)
         Routines.admin.methodList({}, dispatch)
         Routines.admin.boxList({}, dispatch)
-
     }
-
     showNotification(label, error) {
         var _notificationSystem = this.refs.notificationSystem;
 
@@ -100,7 +95,6 @@ class Invoice extends Component {
             message: (
                 <div>
                     <p><b>{error.message}</b></p>
-
                 </div>
             ),
             level: label,
@@ -203,14 +197,11 @@ class Invoice extends Component {
         this.hasError(r_index)
         this.hasError(r_date)
         this.hasError(r_time)
-
-
     }
 
     getElement(id) {
         return document.getElementById(id)
     }
-
     hasError = (data) => {
         if (data) {
             let a = data.value.length > 0
@@ -221,8 +212,6 @@ class Invoice extends Component {
             if (a) data.style.borderColor = '#fff'
         }
     }
-
-
     addRow() {
         let rows = this.state.rows
         let value = rows.map((row, key) => `package${row}`)
@@ -231,7 +220,6 @@ class Invoice extends Component {
             rows: rows
         })
     }
-
     handleScan(data) {
         const {dispatch, invoceData, reset} = this.props
 
@@ -361,8 +349,6 @@ class Invoice extends Component {
                 })
             },
             dropdownIndicator: (provided) => {
-                console.log('style dropdownIndicator', provided)
-
                 return ({
                     ...provided,
                     padding: 0,
@@ -385,16 +371,11 @@ class Invoice extends Component {
                 return {...provided, opacity, transition};
             }
         }
-        const onChange = value => {
-            console.log(value);
-        };
-
         return (
             <Grid className="wrapper show-grid-container">
                 <h4>
                     Форма заполнения накладной
-                    <button
-                        style={{
+                    <button style={{
                             backgroundColor: 'transparent',
                             border: 0
                         }}
@@ -402,9 +383,11 @@ class Invoice extends Component {
                             this.props.clearProducts()
                             this.props.history.go('/main')
                         }}
-                    ><img width={15} src={require('../../../assets/img/delete-file.png')}/> <span style={{
-                        fontSize: 12
-                    }}>Clear</span></button>
+                    >
+                        <img width={15} src={require('../../../assets/img/delete-file.png')}/> <span style={{
+                            fontSize: 12
+                        }}>Clear</span>
+                    </button>
                 </h4>
                 {(false) && <Loading/>}
                 <NotificationSystem ref="notificationSystem"/>
@@ -590,12 +573,12 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <Select
                                                 name="form-field-name"
-                                                id={'sender_region'}
+                                                id={'sender_region1'}
                                                 styles={customStyles}
                                                 placeholder={'Область'}
-                                                value={this.state.sender_region}
+                                                value={this.state.sender_region1}
                                                 isSearchable={true}
-                                                onChange={(selectedOption) => this.setState({sender_region: selectedOption})}
+                                                onChange={(selectedOption) => this.setState({sender_region1: selectedOption})}
                                                 options={regions}
                                             />
                                         </FormGroup>
@@ -690,9 +673,9 @@ class Invoice extends Component {
                                             id={'receiver_region'}
                                             styles={customStyles}
                                             placeholder={'Область'}
-                                            value={this.state.receiver_region}
+                                            value={this.state.receiver_region1}
                                             isSearchable={true}
-                                            onChange={(selectedOption) => this.setState({receiver_region: selectedOption})}
+                                            onChange={(selectedOption) => this.setState({receiver_region1: selectedOption})}
                                             options={cities}
                                         />
                                     </Col>
@@ -776,14 +759,13 @@ class Invoice extends Component {
                                         <ControlLabel>Дата</ControlLabel>
 
                                         <FormGroup>
-
-                                            {/*<FormControl*/}
-                                                {/*id={'date'}*/}
-                                                {/*type={'text'}*/}
-                                                {/*placeholder={'Дата'}*/}
-                                                {/*onChange={e => console.log(typeof e.target.value)}*/}
-                                                {/*value={moment(this.state.date).format('DD-MM-YYYY')}*/}
-                                            {/*/>*/}
+                                            <FormControl
+                                                id={'date'}
+                                                type={'date'}
+                                                placeholder={'Дата'}
+                                                onChange={e => this.setState({date: e.target.value})}
+                                                value={this.state.date}
+                                            />
                                         </FormGroup>
                                     </Col>
                                     <Col md={8} xs={8} className={'date-container '}>
@@ -791,8 +773,8 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'time'}
-                                                type={'text'}
-                                                value={moment(this.state.time).format('HH:mm')}
+                                                type={'time'}
+                                                value={this.state.time}
                                                 onChange={(e) => this.setState({time: e.target.value})}
                                             />
                                         </FormGroup>
@@ -949,24 +931,8 @@ class Invoice extends Component {
                                 </Col>
                             </Col>
                             <Col xs={12} md={12} className={'form-padding'}>
-                                {/*<Col className={'header-form delivery-form'}><p>6 Доставка</p>*/}
-                                {/*<button*/}
-                                {/*onClick={(e) => {*/}
-                                {/*e.preventDefault()*/}
-                                {/*this.setState({menuVisible: !this.state.menuVisible})*/}
-                                {/*}}*/}
-                                {/*id={'delivery'}>{this.state.menuVisible ?*/}
-                                {/*<i className={'glyphicon glyphicon-chevron-up'}/> :*/}
-                                {/*<i className={'glyphicon glyphicon-chevron-down'}/>}*/}
-                                {/*</button>*/}
-                                {/*</Col>*/}
+
                             </Col>
-                            {/*{*/}
-                            {/*this.state.menuVisible ? <div>*/}
-                            {/*<Dostavka close={() => this.setState({menuVisible: !this.state.menuVisible})}/>*/}
-                            {/*</div> :*/}
-                            {/*null*/}
-                            {/*}*/}
                             <Clearfix/>
                             <Col xs={12} md={6} className={'options-container-right'}>
 
@@ -1036,9 +1002,7 @@ class Invoice extends Component {
                                     </p>
                                 </Col>
                                 <Col className={'total-number'}>
-
                                     <p><b>{final_sum ? final_sum : '0'} сум</b></p>
-
                                 </Col>
                             </Col>
                         </Col>
@@ -1055,28 +1019,14 @@ Invoice = reduxForm({
 
 
 const mapStateToProps = (state, ownPops) => {
-
     const selector = formValueSelector('getOrderProduct')
-
     return {
         data: state.orderProduct.regions,
         processing: state.orderProduct.processing,
         invoceData: state.orderProduct.invoce_list,
         products: state.orderProduct.products,
         delivery: state.orderProduct.delivery,
-        receiver_f_l_m: selector(state, 'receiver_f_l_m'),
-        sender_f_l_m: selector(state, 'sender_f_l_m'),
         boxList: state.orderProduct.boxList,
-        sender_region: selector(state, 'sender_region'),
-        receiver_region: selector(state, 'receiver_region'),
-        sender_phone: selector(state, 'sender_phone'),
-        receiver_phone: selector(state, 'receiver_phone'),
-        payment_cash: selector(state, 'payment_cash'),
-        payment_transfer: selector(state, 'payment_transfer'),
-        payment_card: selector(state, 'payment_card'),
-        receiver_organization: selector(state, 'receiver_organization'),
-        to_be_paid_sender: selector(state, 'to_be_paid_sender'),
-        to_be_paid_receiver: selector(state, 'to_be_paid_receiver'),
         tarifList: state.orderProduct.tarifList,
         methodList: state.orderProduct.methodList,
         searchProcessing: state.searchText.processing

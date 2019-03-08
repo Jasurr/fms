@@ -127,7 +127,6 @@ export default (state = initialState, action) => {
                 sender = false
                 receiver = true
             }
-            let date, time
 
             return {
                 ...state,
@@ -138,8 +137,8 @@ export default (state = initialState, action) => {
                     payment_transfer: transfer,
                     to_be_paid_sender: sender,
                     to_be_paid_receiver: receiver,
-                    date: created_date,
-                    time: created_date,
+                    // date: created_date,
+                    // time: created_date,
                 },
                 products: package_list2
             }
