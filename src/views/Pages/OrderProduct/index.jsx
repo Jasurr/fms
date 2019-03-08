@@ -3,7 +3,8 @@ import BarcodeReader from 'react-barcode-reader'
 import {connect} from 'react-redux';
 import {Routines} from 'common/api';
 import './styles.css'
-import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row} from "react-bootstrap";
+import CurrencyInput from 'react-currency-input';
+import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row, Form, InputGroup} from "react-bootstrap";
 import {formValueSelector, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
@@ -20,8 +21,6 @@ import moment from 'moment'
 var Barcode = require('react-barcode');
 
 //eslint-disable import/first
-
-
 function totalWeight(width, height, length, weight) {
     let volume = 0;
     let result = 0
@@ -573,12 +572,12 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <Select
                                                 name="form-field-name"
-                                                id={'sender_region1'}
+                                                id={'sender_region'}
                                                 styles={customStyles}
                                                 placeholder={'Область'}
-                                                value={this.state.sender_region1}
+                                                value={this.state.sender_region}
                                                 isSearchable={true}
-                                                onChange={(selectedOption) => this.setState({sender_region1: selectedOption})}
+                                                onChange={(selectedOption) => this.setState({sender_region: selectedOption})}
                                                 options={regions}
                                             />
                                         </FormGroup>
@@ -666,16 +665,15 @@ class Invoice extends Component {
                                 </Col>
 
                                 <Col xs={12} md={4}>
-
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
                                         <Select
                                             name="form-field-name"
                                             id={'receiver_region'}
                                             styles={customStyles}
                                             placeholder={'Область'}
-                                            value={this.state.receiver_region1}
+                                            value={this.state.receiver_region}
                                             isSearchable={true}
-                                            onChange={(selectedOption) => this.setState({receiver_region1: selectedOption})}
+                                            onChange={(selectedOption) => this.setState({receiver_region: selectedOption})}
                                             options={cities}
                                         />
                                     </Col>
@@ -701,13 +699,6 @@ class Invoice extends Component {
                                                        className={'form-control'}
                                                        onChange={(e) => this.setState({receiver_phone: e.target.value})}
                                             />
-                                            {/*<FormControl*/}
-                                            {/*id={'receiver_phone'}*/}
-                                            {/*placeholder={'Телефон'}*/}
-                                            {/*type={'text'}*/}
-                                            {/*value={this.state.receiver_phone}*/}
-                                            {/*onChange={(e) => this.setState({receiver_phone: e.target.value})}*/}
-                                            {/*/>*/}
                                         </FormGroup>
                                     </Col>
 
@@ -791,7 +782,6 @@ class Invoice extends Component {
                                         сопровождение (если применимо) получено
                                     </p>
                                 </Col>
-
                                 <Col xs={12} md={6} className={'signature-container'}>
                                     <p>Подпись представителя FMS,
                                         расшифровка подписи</p>
@@ -830,7 +820,6 @@ class Invoice extends Component {
                                                    checked={this.state.to_be_picked}
                                                    onChange={e => this.setState({to_be_picked: !this.state.to_be_picked})}
                                             />
-
                                             <span className="checkmark"/>
                                         </label>
                                     </Col>
@@ -861,7 +850,6 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_paid_sender'}
-                                                   disabled={sender_disabled}
                                                    checked={this.state.to_be_paid_sender}
                                                    onChange={e => this.setState({to_be_paid_sender: !this.state.to_be_paid_sender})}
                                             />
@@ -879,42 +867,65 @@ class Invoice extends Component {
                                 </Col>
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
                                     <Col xs={12} md={12} className={'avia-trucking-container first'}>
-                                        <p>
-                                            Наличные
-                                        </p>
-                                        <label className="container-checkbox">
-                                            <input type={'checkbox'}
-                                                   id={'payment_cash'}
-                                                   checked={this.state.payment_cash}
-                                                   disabled={cash_disabled}
-                                                   onChange={e => this.setState({payment_cash: !this.state.payment_cash})}
-                                            />
-                                            <span className="checkmark"/>
-                                        </label>
+                                            <div className="input-group container-check">
+                                                <span className="input-group-addon">
+                                                <label className="container-checkbox">
+                                                  <input type={'checkbox'}
+                                                         id={'payment_cash'}
+                                                         checked={this.state.payment_cash}
+                                                         onChange={() => this.setState({payment_cash: !this.state.payment_cash})}
+                                                  />
+                                                     <span className="checkmark"/>
+                                                    </label>
+                                                </span>
+                                                <CurrencyInput
+                                                ref="myinput"
+                                                precision=""
+                                                 className="form-control"
+                                                 readOnly={!this.state.payment_cash}
+                                                 placeholder={'Наличие'}
+                                                 />
+                                            </div>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding'}>
-                                        <p>Пластиковая карта</p>
+                                    <div className="input-group container-check">
+                                        <span className="input-group-addon">
                                         <label className="container-checkbox">
-                                            <input type={'checkbox'}
-                                                   id={'payment_card'}
-                                                   disabled={card_diabled}
-                                                   checked={this.state.payment_card}
-                                                   onChange={e => this.setState({payment_card: !this.state.payment_card})}
-                                            />
-                                            <span className="checkmark"/>
-                                        </label>
+                                          <input type={'checkbox'}
+                                                 id={'payment_card'}
+                                                 checked={this.state.payment_card}
+                                                 onChange={() => this.setState({payment_card: !this.state.payment_card})}
+                                          />
+                                             <span className="checkmark"/>
+                                            </label>
+                                        </span>
+                                        <CurrencyInput
+                                          ref="myinput"
+                                          readOnly={!this.state.payment_card}
+                                         className="form-control"
+                                         placeholder={'Пластиковая карта'}
+                                         />
+                                    </div>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding last'}>
-                                        <p>Перечислением</p>
+                                    <div className="input-group container-check">
+                                        <span className="input-group-addon">
                                         <label className="container-checkbox">
-                                            <input type={'checkbox'}
-                                                   id={'payment_transfer'}
-                                                   disabled={transfer_disabled}
-                                                   checked={this.state.payment_transfer}
-                                                   onChange={e => this.setState({payment_transfer: !this.state.payment_transfer})}
-                                            />
-                                            <span className="checkmark"/>
-                                        </label>
+                                          <input type={'checkbox'}
+                                                 id={'payment_transfer'}
+                                                 checked={this.state.payment_transfer}
+                                                 onChange={e => this.setState({payment_transfer: !this.state.payment_transfer})}
+                                          />
+                                             <span className="checkmark"/>
+                                            </label>
+                                        </span>
+                                        <CurrencyInput
+                                          ref="myinput"
+                                          className="form-control"
+                                          readOnly={!this.state.payment_transfer}
+                                          placeholder={'Перечислением'}
+                                         />
+                                    </div>
                                     </Col>
                                     <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
                                         <p>Получатель</p>
@@ -935,7 +946,6 @@ class Invoice extends Component {
                             </Col>
                             <Clearfix/>
                             <Col xs={12} md={6} className={'options-container-right'}>
-
                                 <p>
                                     Я подтверждаю, что отправление/груз поступило в закрытом виде, отсутствуют внешние
                                     повреждения упаковки,перевязки, печатей (пломб). Количество и вес отправления/ груза
@@ -945,7 +955,6 @@ class Invoice extends Component {
                                     получения груза
                                 </p>
                             </Col>
-
                             <Col xs={12} md={6} className={'signature-container signature-container-right'}>
                                 <p>Подпись отправителя,
                                     расшифровка подписи</p>
@@ -955,7 +964,6 @@ class Invoice extends Component {
                                 />
                             </Col>
                             <Clearfix/>
-
                             <Col xs={12} md={12} className={'form-padding '}>
                                 <Col className={'header-form'}><p>6 Сумма к оплате</p></Col>
                             </Col>
@@ -992,9 +1000,7 @@ class Invoice extends Component {
                                             ref={el => (this.componentRef = el)}/>
                                     </div>
                                 </Col>
-
                             </Col>
-
                             <Col xs={12} md={6} className={'form-padding total-sum'}>
                                 <Col className={'total-text'}>
                                     <p>
@@ -1019,14 +1025,28 @@ Invoice = reduxForm({
 
 
 const mapStateToProps = (state, ownPops) => {
+
     const selector = formValueSelector('getOrderProduct')
+
     return {
         data: state.orderProduct.regions,
         processing: state.orderProduct.processing,
         invoceData: state.orderProduct.invoce_list,
         products: state.orderProduct.products,
         delivery: state.orderProduct.delivery,
+        receiver_f_l_m: selector(state, 'receiver_f_l_m'),
+        sender_f_l_m: selector(state, 'sender_f_l_m'),
         boxList: state.orderProduct.boxList,
+        sender_region: selector(state, 'sender_region'),
+        receiver_region: selector(state, 'receiver_region'),
+        sender_phone: selector(state, 'sender_phone'),
+        receiver_phone: selector(state, 'receiver_phone'),
+        payment_cash: selector(state, 'payment_cash'),
+        payment_transfer: selector(state, 'payment_transfer'),
+        payment_card: selector(state, 'payment_card'),
+        receiver_organization: selector(state, 'receiver_organization'),
+        to_be_paid_sender: selector(state, 'to_be_paid_sender'),
+        to_be_paid_receiver: selector(state, 'to_be_paid_receiver'),
         tarifList: state.orderProduct.tarifList,
         methodList: state.orderProduct.methodList,
         searchProcessing: state.searchText.processing

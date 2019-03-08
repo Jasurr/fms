@@ -212,7 +212,7 @@
 }
 
 .avia-trucking-container {
-    background-color: #FFFFFF;
+    /*background-color: #FFFFFF;*/
     margin-top: 1%;
     height: 40px;
     display: flex;
@@ -371,11 +371,15 @@
     margin-bottom: 20px;
     padding-left: 35px;
     cursor: pointer;
-    font-size: 22px;
+    font-size: 20px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+.container-check > input[type='text'] {
+    height: 40px!important;
 }
 
 /* Hide the browser's default checkbox */
