@@ -1,0 +1,15 @@
+
+.print-table th, .print-table td, .print-table {
+  border: 1px solid #000000;
+}
+.print-table {
+    width: 100%;
+}
+.print-table th {
+  font-size: 12px;
+  font-weight: 600;
+}
+.print-table td {
+  font-size: 14px;
+  padding-left: 2px;
+}
