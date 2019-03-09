@@ -22,7 +22,7 @@ class Context extends Component {
                 <Route
                     {...rest}
                     render={props => {
-                        if (!this.hasToken()) {
+                        if (this.hasToken()) {
                             return <Route component={Dashboard}/>
                         }
                         if (props.location.pathname.includes('/admin') ) {

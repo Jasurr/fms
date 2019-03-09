@@ -8,7 +8,7 @@ import NotificationSystem from "react-notification-system";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import {Col, Clearfix} from "react-bootstrap";
 import logo from '../../../assets/img/logo/logo.svg';
-import './styles.css'
+// import './styles.css'
 class ArrivedProduct extends React.Component {
 
 

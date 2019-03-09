@@ -845,6 +845,17 @@ class Invoice extends Component {
                                             <span className="checkmark"/>
                                         </label>
                                     </Col>
+                                    <Col xs={12} md={12} className={'avia-trucking-container form-padding'}>
+                                        <p>Трансфер</p>
+                                        <label className="container-checkbox">
+                                            <input type={'checkbox'}
+                                                   id={'to_be_delivered'}
+                                                   checked={this.state.transfer}
+                                                   onChange={e => this.setState({transfer: !this.state.transfer})}
+                                            />
+                                            <span className="checkmark"/>
+                                        </label>
+                                    </Col>
                                     <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
                                         <p>Отправитель</p>
                                         <label className="container-checkbox">
@@ -901,6 +912,7 @@ class Invoice extends Component {
                                         </span>
                                         <CurrencyInput
                                           ref="myinput"
+                                          precision=""
                                           readOnly={!this.state.payment_card}
                                          className="form-control"
                                          placeholder={'Пластиковая карта'}
@@ -921,11 +933,15 @@ class Invoice extends Component {
                                         </span>
                                         <CurrencyInput
                                           ref="myinput"
+                                          precision=""
                                           className="form-control"
                                           readOnly={!this.state.payment_transfer}
                                           placeholder={'Перечислением'}
                                          />
                                     </div>
+                                    </Col>
+                                    <Col xs={12} md={12} className={'empty-container form-padding'}>
+
                                     </Col>
                                     <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
                                         <p>Получатель</p>
