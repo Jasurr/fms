@@ -200,12 +200,11 @@ export default (state = initialState, action) => {
                 products: package_list
             }
         case 'ADD_ROW': {
-            let rows = action.data && state.products.push(action.data)
             return {
                 ...state,
                 products: [
-                    ...state.products,
-                    ...rows
+                  ...state.products,
+                  ...state.products.push(action.data)
                 ]
             }
         }

@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {Routines} from 'common/api';
 import './styles.css'
 import CurrencyInput from 'react-currency-input';
-import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row, Form, InputGroup} from "react-bootstrap";
+import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row} from "react-bootstrap";
 import {formValueSelector, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
@@ -17,7 +17,7 @@ import InputMask from 'react-input-mask';
 import Select from 'react-select';
 import {cities, regions} from "../../../assets/Data/data";
 import Autocomplete from 'react-autocomplete'
-import moment from 'moment'
+
 var Barcode = require('react-barcode');
 
 //eslint-disable import/first
@@ -740,7 +740,11 @@ class Invoice extends Component {
                             </Col>
                             {/****** 3   Описание  груза  ******/}
                             <Col xs={12} md={12} className={'form-padding '}>
-                                <Col className={'header-form'}><p>3 Описание груза</p></Col>
+                                <Col className={'header-form table-volume-container'}><p>3 Описание груза</p>
+                                <button style={{backgroundColor: 'transparent', border: 0}}>
+                                  <img style={{color: '#fff', borderColor: '#fff'}} src={require('./Recources/settings2.png')} />
+                                </button>
+                                </Col>
                             </Col>
                             <Col xs={12} md={12} className={'form-padding table-container'}>
                                 <TableList finalSum={() => this.finalSumm()} products={this.state.package_list}/>
