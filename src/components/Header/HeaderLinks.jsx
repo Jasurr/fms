@@ -1,11 +1,12 @@
 import React, {Component} from "react";
-import {FormControl, FormGroup, MenuItem, Nav, NavDropdown, NavItem} from "react-bootstrap";
+import {Button, Col, FormControl, FormGroup, Grid, MenuItem, Modal, Nav, NavDropdown, NavItem} from "react-bootstrap";
 import {Routines} from 'common/api';
 import {connect} from 'react-redux';
 import {NavLink} from "react-router-dom";
 import Navbar from "react-bootstrap/es/Navbar";
 import {reduxForm} from "redux-form";
 import {searchText} from "../../views/Pages/reducer";
+import Settings from "../../views/Pages/OrderProduct";
 
 
 class HeaderLinks extends Component {
@@ -46,10 +47,32 @@ class HeaderLinks extends Component {
     render() {
         return (
             <div>
+                <Modal
+                    onHide={() => this.setState({showFilter: false})}
+                    show={this.state.showFilter}
+                >
+                    <div style={{
+                        padding: 20
+                    }}>
+                        <h4>Фильтр</h4>
+                        <hr />
+                        <Col xs={4} md={4}>
+                            <FormGroup>
+                                <FormControl
+                                    type={'date'}
+
+                                />
+                            </FormGroup>
+                        </Col>
+                    </div>
+                </Modal>
                 <Navbar.Form pullLeft>
+                    <Col xs={12} style={{
+                        display: 'flex',
+                        flexDirection:'row'
+                    }}>
                     <form>
                         <FormGroup>
-
                             <FormControl
                                 className={'search-box'}
                                 type={'text'}
@@ -57,9 +80,23 @@ class HeaderLinks extends Component {
                                 placeholder={'Search'}
                                 onChange={(e) => this.searchText(e)}
                             />
-
                         </FormGroup>
                     </form>
+                    <a
+                        onClick={() => this.setState({showFilter: !this.state.showFilter})}
+                        style={{
+                        fontSize: 14,
+                        border: '1px solid lightgray',
+                        padding: 0,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        margin:0,
+                        cursor: 'pointer',
+                        height: 20,
+                        color: 'lightgray',
+                        borderRadius: 5
+                    }}>Filter</a>
+                    </Col>
                 </Navbar.Form>
                 <Nav pullRight>
                     <NavItem eventKey={1}>

@@ -333,8 +333,8 @@ class Invoice extends Component {
     render() {
         const {serial_code, to_be_delivered, history} = this.props.invoceData
         const {data, boxList, tarifList, methodList, products} = this.props
-        let tarif = this.findTarif()
-        let final_sum = this.finalSumm()
+        let tarif=''
+        let final_sum =''
 
         let cash_disabled, card_diabled, transfer_disabled, sender_disabled, receiver_disabled
         const {payment_cash, payment_card, payment_transfer, to_be_paid_receiver, to_be_paid_sender} = this.state
@@ -603,6 +603,7 @@ class Invoice extends Component {
                                     </Col>
                                     <Col md={6} sm={6} xs={12} className={'form-padding '}>
                                         <FormGroup>
+                                            {console.log('tarifList', tarifList)}
                                             <Select
                                                 name="form-field-name"
                                                 id={'sender_region'}
@@ -611,7 +612,11 @@ class Invoice extends Component {
                                                 value={this.state.sender_region}
                                                 isSearchable={true}
                                                 onChange={(selectedOption) => this.setState({sender_region: selectedOption})}
-                                                options={regions}
+                                                options={tarifList && tarifList.map(item => ({
+                                                    value: item.city_from_a.title,
+                                                    label: item.city_from_a.title
+                                                    })
+                                                )}
                                             />
                                         </FormGroup>
                                     </Col>
