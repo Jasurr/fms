@@ -74,7 +74,7 @@ class TableList extends React.Component {
                 <ProductTable onProductTableUpdate={this.handleProductTable.bind(this)}
                               onRowAdd={this.handleAddEvent.bind(this)} onRowDel={this.handleRowDel.bind(this)}
                               products={this.state.products} filterText={this.state.filterText}
-
+                              settings={this.props.settings}
                 />
             </div>
         );
@@ -90,6 +90,7 @@ class ProductTable extends React.Component {
         var rowDel = this.props.onRowDel;
         let rowAdd = this.props.onRowAdd
         var filterText = this.props.filterText;
+        let settings = this.props.settings
         var product
         let volumeArr
         let final_quantity = 0, final_weight = 0, final_volume = 0
@@ -101,12 +102,13 @@ class ProductTable extends React.Component {
                     product={product}
                     onDelEvent={rowDel.bind(this)}
                     key={product.id}
+                    settings={settings}
                     rowAdd={rowAdd.bind(this)}
                 />)
             });
 
             volumeArr = products.map(item => {
-                return volume(item.width, item.height, item.length, item.weight)
+                return volume(item.width, item.height, item.length, item.weight, settings.tariff_summ)
             })
 
             for (let i = 0; i < products.length; i++) {
@@ -180,12 +182,12 @@ class ProductTable extends React.Component {
 
 }
 
-function volume(width, height, length, weight) {
+function volume(width, height, length, weight, tariff_summ) {
     let volume = 0;
     let result = ''
     if (width > 0 && height > 0 && length > 0 && weight > 0) {
         // console.log('asas')
-        volume = width * height * length / 6000;
+        volume = width * height * length / parseInt(tariff_summ);
         if (volume > weight) {
             result = Math.ceil(volume)
         } else {
@@ -203,7 +205,7 @@ class ProductRow extends React.Component {
 
     render() {
         const {width, height, length, weight} = this.props.product
-        let result = volume(width, height, length, weight)
+        let result = volume(width, height, length, weight, this.props.settings.tariff_summ)
         return (
             <tr className="eachRow">
                 <EditableCell onProductTableUpdate={this.props.onProductTableUpdate} cellData={{
@@ -273,7 +275,8 @@ const mapsStateToProps = state => {
     return {
         products: state.orderProduct.products,
         tarifList: state.orderProduct.tarifList,
-        methodList: state.orderProduct.methodList
+        methodList: state.orderProduct.methodList,
+        settings: state.orderProduct.settings
     }
 }
 const mapsDispatchProps = dispatch => {

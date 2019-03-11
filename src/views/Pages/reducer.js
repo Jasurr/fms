@@ -46,7 +46,13 @@ export const clearProducts = () => {
         }
     }
 }
+export const setSettings = (data) => {
 
+    return {
+        type: 'SET_SETTINGS',
+        data
+    }
+}
 const initialState = {
     regions: [],
     invoce_list: {},
@@ -68,7 +74,12 @@ const initialState = {
     delivery: null,
     boxList: [],
     processing: false,
-    notifications: []
+    notifications: [],
+    settings: {
+        is_weight: false,
+        is_volume: true,
+        tariff_summ: 6000
+    }
 };
 
 
@@ -200,11 +211,12 @@ export default (state = initialState, action) => {
                 products: package_list
             }
         case 'ADD_ROW': {
+
             return {
                 ...state,
                 products: [
-                  ...state.products,
-                  ...state.products.push(action.data)
+                    ...state.products,
+                    action.data
                 ]
             }
         }
@@ -227,33 +239,30 @@ export default (state = initialState, action) => {
                 invoce_list: {},
                 products: action.data
             }
-        case
-        Routines.admin.tarifList.SUCCESS
-        :
+        case Routines.admin.tarifList.SUCCESS:
             return {
                 ...state,
                 tarifList: action.payload.response.results
             }
-        case
-        Routines.admin.methodList.SUCCESS
-        :
+        case Routines.admin.methodList.SUCCESS:
             return {
                 ...state,
                 methodList: action.payload.response.results
             }
-        case
-        Routines.admin.createDelivery.SUCCESS
-        :
+        case Routines.admin.createDelivery.SUCCESS:
             return {
                 ...state,
                 delivery: action.payload.response
             }
-        case
-        Routines.admin.boxList.SUCCESS
-        :
+        case Routines.admin.boxList.SUCCESS:
             return {
                 ...state,
                 boxList: action.payload.response.results
+            }
+        case 'SET_SETTINGS':
+            return {
+                ...state,
+                settings: action.data
             }
 
     }

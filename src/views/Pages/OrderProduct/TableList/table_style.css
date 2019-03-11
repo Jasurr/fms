@@ -1,0 +1,5 @@
+
+.volume-container> table, .volume-container > th, .volume-container> td {
+    width: 100%;
+    border: 1px solid black;
+}

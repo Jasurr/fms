@@ -30,6 +30,7 @@ import updateInvoice from "./updateInvoice";
 import updateStatus from "./updateStatus";
 import signinAdmin from "./signinAdmin";
 import notifications from "./notifications";
+import calculate from "./calculate";
 
 export default function sagas(api) {
     return [
@@ -71,6 +72,7 @@ export default function sagas(api) {
         updateInvoice(api),
         updateStatus(api),
         notifications(api),
+        calculate(api),
 
     ]
 }

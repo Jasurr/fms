@@ -14,8 +14,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
 }
+.sale-container {
+    padding-left: 5px!important;
+}
+
 .region {
     height: 40px;
 }
@@ -349,7 +352,7 @@
     margin-top: 5px;
     padding-left: 5px;
     border-radius: 5px;
-    height: 130px;
+    height: 180px!important;
     margin-left: 10px;
 }
 
@@ -384,10 +387,14 @@
     -ms-user-select: none;
     user-select: none;
 }
-
+.container-check {
+    width: 100%;
+    padding: 0!important;
+}
 .container-check > input[type='text'] {
     height: 40px!important;
 }
+
 
 /* Hide the browser's default checkbox */
 .container-checkbox input {

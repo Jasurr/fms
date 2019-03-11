@@ -17,6 +17,9 @@ export default api => {
         notifications: data => {
             return api.get('invoice/received/list')
         },
+        calculate: data => {
+            return api.post('invoice/total/price')
+        },
 
         getRegions: data => {
             return api.get('region/list', data)

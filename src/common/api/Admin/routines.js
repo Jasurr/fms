@@ -39,4 +39,5 @@ export default {
     updateInvoice: createRoutine('UPDATE_INVOICE'),
     updateStatus: createRoutine('UPDATE_STATUS'),
     notifications: createRoutine('NOTIFICATIONS'),
+    calculate: createRoutine('CALCULATE'),
 }

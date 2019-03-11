@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {Routines} from 'common/api';
 import './styles.css'
 import CurrencyInput from 'react-currency-input';
-import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Row} from "react-bootstrap";
+import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Modal, Row} from "react-bootstrap";
 import {formValueSelector, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
@@ -15,9 +15,9 @@ import Loading from "../../../components/Loading";
 import NotificationSystem from "react-notification-system";
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
-import {cities, regions} from "../../../assets/Data/data";
+import {cities, discount, regions} from "../../../assets/Data/data";
 import Autocomplete from 'react-autocomplete'
-
+import Settings from './Settings/index'
 var Barcode = require('react-barcode');
 
 //eslint-disable import/first
@@ -69,6 +69,7 @@ class Invoice extends Component {
             city_to_a: '',
             tarif: '',
             sum: 0,
+            showSettings: false,
             final_summ: 0,
             _notificationSystem: null,
             ...this.props.invoceData,
@@ -304,6 +305,31 @@ class Invoice extends Component {
         return final_sum
     }
 
+    calculate() {
+        const {dispatch, reset, settings} = this.props
+        const {is_weight, is_volume, tariff_summ} = settings
+        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city } = this.state
+        let kg = (is_weight) ? true : false;
+        Routines.admin.calculate({
+            request: {
+                kg: kg,
+                discount:discount,
+                // width: 2,
+                // height: 23,
+                // length: '',
+                // weight: '',
+                // quantity: '',
+                tariff: '',
+                for_additional_kg: tariff_summ,
+                transit: transfer,
+                to_be_delivered,
+                to_be_picked,
+                to_be_region,
+                to_be_city: ''
+            }
+        }, dispatch)
+    }
+
     render() {
         const {serial_code, to_be_delivered, history} = this.props.invoceData
         const {data, boxList, tarifList, methodList, products} = this.props
@@ -372,6 +398,13 @@ class Invoice extends Component {
         }
         return (
             <Grid className="wrapper show-grid-container">
+
+                <Modal
+                    onHide={() => this.setState({showSettings: false})}
+                    show={this.state.showSettings}
+                >
+                    <Settings close={() => this.setState({showSettings: false})}/>
+                </Modal>
                 <h4>
                     Форма заполнения накладной
                     <button style={{
@@ -515,7 +548,7 @@ class Invoice extends Component {
                                             renderItem={(item, isHighlighted) =>
                                             <div style={{
                                                 background: isHighlighted ? '#ddecff' : 'white',
-                                                padding: '4px 8px'
+                                                padding: '4px 8px',
                                             }}>
                                                 <p style={{
                                                     fontWeight: isHighlighted ? '600' : '400',
@@ -719,6 +752,7 @@ class Invoice extends Component {
                                         <span>Индекс </span>
                                     </Col>
                                     <Col xs={12} md={12} className={'form-padding '}>
+
                                         <ReactCodeInput
                                             autoFocus={false}
                                             type={'text'}
@@ -740,9 +774,23 @@ class Invoice extends Component {
                             </Col>
                             {/****** 3   Описание  груза  ******/}
                             <Col xs={12} md={12} className={'form-padding '}>
-                                <Col className={'header-form table-volume-container'}><p>3 Описание груза</p>
-                                <button style={{backgroundColor: 'transparent', border: 0}}>
-                                  <img style={{color: '#fff', borderColor: '#fff'}} src={require('./Recources/settings2.png')} />
+                                <Col className={'header-form table-volume-container'}>
+                                    <p>3 Описание груза</p>
+                                <button
+                                    type={'button'}
+                                    onClick={() => this.setState({showSettings: !this.state.showSettings})}
+                                    style={{
+                                        backgroundColor: 'transparent',
+                                        border: 0,
+                                        margin:10,
+                                        padding: 0,
+                                    }}>
+                                  <img
+                                      style={{
+                                          margin:0,
+                                          padding: 0,
+                                      }}
+                                      src={require('./Recources/settings2.png')} />
                                 </button>
                                 </Col>
                             </Col>
@@ -843,8 +891,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_delivered'}
-                                                   checked={this.state.to_be_delivered_region}
-                                                   onChange={e => this.setState({to_be_delivered_region: !this.state.to_be_delivered_region})}
+                                                   checked={this.state.to_be_region}
+                                                   onChange={e => this.setState({to_be_region: !this.state.to_be_region})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -860,7 +908,7 @@ class Invoice extends Component {
                                             <span className="checkmark"/>
                                         </label>
                                     </Col>
-                                    <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
+                                    <Col xs={12} md={12} className={'form-padd ing trucking-sub-container'}>
                                         <p>Отправитель</p>
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
@@ -895,6 +943,7 @@ class Invoice extends Component {
                                                 </span>
                                                 <CurrencyInput
                                                 ref="myinput"
+                                                id={'payment_cash'}
                                                 precision=""
                                                  className="form-control"
                                                  readOnly={!this.state.payment_cash}
@@ -944,9 +993,42 @@ class Invoice extends Component {
                                          />
                                     </div>
                                     </Col>
-                                    <Col xs={12} md={12} className={'empty-container form-padding'}>
-
+                                    <Col xs={12} md={12} className={'avia-trucking-container form-padding sale-container'}>
+                                            <FormGroup>
+                                                <Autocomplete
+                                                    getItemValue={(item) => item.label}
+                                                    items={discount}
+                                                    inputProps={{ className: 'form-control', placeholder: 'Скидки(%)'}}
+                                                    shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                                                    menuStyle={{
+                                                        borderRadius: '5px',
+                                                        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
+                                                        background: 'rgba(255, 255, 255, 0.9)',
+                                                        padding: '2px 4px',
+                                                        fontSize: '90%',
+                                                        position: 'fixed',
+                                                        overflow: 'auto',
+                                                        maxHeight: '50%',
+                                                        zIndex: 999
+                                                    }}
+                                                    renderItem={(item, isHighlighted) =>
+                                                        <div style={{
+                                                            background: isHighlighted ? '#ddecff' : 'white',
+                                                            padding: '4px 8px',
+                                                        }}>
+                                                            <p style={{
+                                                                fontWeight: isHighlighted ? '600' : '400',
+                                                                fontSize: 12
+                                                            }}>{item.label}</p>
+                                                        </div>
+                                                    }
+                                                    value={this.state.sender_city}
+                                                    onChange={(e) => this.setState({sender_city: e.target.value})}
+                                                    onSelect={(sender_city) => this.setState({ sender_city })}
+                                                />
+                                            </FormGroup>
                                     </Col>
+
                                     <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
                                         <p>Получатель</p>
                                         <label className="container-checkbox">
@@ -991,13 +1073,10 @@ class Invoice extends Component {
                                 <Col md={12} xs={12} className={' tarif-fsm-container'}>
                                     <p>Тариф за услуги FMS</p>
                                 </Col>
-                                <Col md={12} xs={12} className={'print-conatiner'}>
-                                    <ReactToPrint
-                                        trigger={() => <Button>Распечатать</Button>}
-                                        content={() => this.componentRef}
-                                    />
-                                </Col>
                                 <Col md={12} xs={12} className={'oformit-container'}>
+                                    <Button type={'button'} onClick={() => this.calculate()}>
+                                        Рассчитать
+                                    </Button>
                                     <Button type={'submit'}>
                                         Оформить
                                     </Button>
@@ -1020,6 +1099,13 @@ class Invoice extends Component {
                                             ref={el => (this.componentRef = el)}/>
                                     </div>
                                 </Col>
+                                <Col md={12} xs={12} className={'print-conatiner'}>
+                                    <ReactToPrint
+                                        trigger={() => <Button>Распечатать</Button>}
+                                        content={() => this.componentRef}
+                                    />
+                                </Col>
+
                             </Col>
                             <Col xs={12} md={6} className={'form-padding total-sum'}>
                                 <Col className={'total-text'}>
@@ -1054,22 +1140,11 @@ const mapStateToProps = (state, ownPops) => {
         invoceData: state.orderProduct.invoce_list,
         products: state.orderProduct.products,
         delivery: state.orderProduct.delivery,
-        receiver_f_l_m: selector(state, 'receiver_f_l_m'),
-        sender_f_l_m: selector(state, 'sender_f_l_m'),
         boxList: state.orderProduct.boxList,
-        sender_region: selector(state, 'sender_region'),
-        receiver_region: selector(state, 'receiver_region'),
-        sender_phone: selector(state, 'sender_phone'),
-        receiver_phone: selector(state, 'receiver_phone'),
-        payment_cash: selector(state, 'payment_cash'),
-        payment_transfer: selector(state, 'payment_transfer'),
-        payment_card: selector(state, 'payment_card'),
-        receiver_organization: selector(state, 'receiver_organization'),
-        to_be_paid_sender: selector(state, 'to_be_paid_sender'),
-        to_be_paid_receiver: selector(state, 'to_be_paid_receiver'),
         tarifList: state.orderProduct.tarifList,
         methodList: state.orderProduct.methodList,
-        searchProcessing: state.searchText.processing
+        searchProcessing: state.searchText.processing,
+        settings: state.orderProduct.settings
     };
 };
 const mapsDispatch = dispatch => {
