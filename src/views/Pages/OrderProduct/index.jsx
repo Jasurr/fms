@@ -1148,7 +1148,7 @@ class Invoice extends Component {
                                     </Col>
                                     <Col md={6} xs={6} className={'print-conatiner'}>
                                         <ReactToPrint
-                                            trigger={() => <Button>Распечатать накладную</Button>}
+                                            trigger={() => <Button>Распечатать нак.</Button>}
                                             content={() => this.componentRef1}
                                         />
                                     </Col>
