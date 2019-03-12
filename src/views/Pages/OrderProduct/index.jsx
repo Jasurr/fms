@@ -9,7 +9,8 @@ import {formValueSelector, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
 import ReactToPrint from "react-to-print";
-import ComponentToPrint from "./Print";
+import ComponentToPrint from "./Print/index";
+import PrintInvoice from "./Print/print_invoice";
 import {clearProducts} from "../reducer";
 import Loading from "../../../components/Loading";
 import NotificationSystem from "react-notification-system";
@@ -380,7 +381,7 @@ class Invoice extends Component {
                 return ({
                     ...provided,
                     borderBottom: '1px dotted pink',
-                    color: state.isSelected ? 'white' : 'blue',
+                    color: state.isSelected ? 'white' : 'black',
                 })
             },
             input: (provided) => {
@@ -465,16 +466,19 @@ class Invoice extends Component {
                                     </FormGroup>
                                 </Col>
                                 <Col xs={8} md={8} className={'form-padding'}>
+                                    {
+                                        console.log('REGION123', this.state.box)
+                                    }
                                     <Select
                                         name="form-field-name"
                                         id={'region'}
                                         styles={customStyles}
                                         placeholder={'TAS'}
-                                        value={this.state.region}
-                                        isSearchable={true}
+                                        isSearchable
+                                        value={data && data.filter(q => q.id === this.state.region).map(item => ({value: item.id, label: item.short}))[0]}
                                         onChange={(selectedOption) => this.setState({region: selectedOption})}
                                         options={data && data.map(item => ({
-                                            value: item.short,
+                                            value: item.id,
                                             label: item.short
                                         }))}
                                     />
@@ -486,7 +490,10 @@ class Invoice extends Component {
                                         id={'box'}
                                         styles={customStyles}
                                         placeholder={'Box'}
-                                        value={this.state.box}
+                                        value={(boxList !== undefined && Array.isArray(boxList) && !boxList.detail) && boxList.filter(q => q.id === this.state.box).map(item => ({
+                                            value: item.id,
+                                            label: item.number
+                                        }))[0]}
                                         isSearchable={true}
                                         onChange={(selectedOption) => this.setState({box: selectedOption})}
                                         options={(boxList !== undefined && Array.isArray(boxList) && !boxList.detail) && boxList.map(item => ({
@@ -628,20 +635,21 @@ class Invoice extends Component {
                                     </Col>
                                     <Col md={6} sm={6} xs={12} className={'form-padding '}>
                                         <FormGroup>
-                                            {console.log('tarifList', tarifList)}
                                             <Select
                                                 name="form-field-name"
                                                 id={'sender_region'}
                                                 styles={customStyles}
                                                 placeholder={'Область'}
-                                                value={this.state.sender_region}
+                                                value={data && data.filter(q => q.title === this.state.sender_region).map(item => ({
+                                                    value: item.id,
+                                                    label: item.title
+                                                }))[0]}
                                                 isSearchable={true}
-                                                onChange={(selectedOption) => this.setState({sender_region: selectedOption})}
-                                                options={tarifList && tarifList.map(item => ({
-                                                        value: item.city_from_a.title,
-                                                        label: item.city_from_a.title
-                                                    })
-                                                )}
+                                                onChange={(selectedOption) => this.setState({sender_region: selectedOption.value})}
+                                                options={data && data.map(item => ({
+                                                    value: item.id,
+                                                    label: item.title
+                                                }))}
                                             />
                                         </FormGroup>
                                     </Col>
@@ -734,10 +742,16 @@ class Invoice extends Component {
                                             id={'receiver_region'}
                                             styles={customStyles}
                                             placeholder={'Область'}
-                                            value={this.state.receiver_region}
+                                            value={data && data.filter(q => q.title === this.state.receiver_region).map(item => ({
+                                                value: item.id,
+                                                label: item.title
+                                            }))[0]}
                                             isSearchable={true}
-                                            onChange={(selectedOption) => this.setState({receiver_region: selectedOption})}
-                                            options={cities}
+                                            onChange={(selectedOption) => this.setState({receiver_region: selectedOption.value})}
+                                            options={data && data.map(item => ({
+                                                value: item.id,
+                                                label: item.title
+                                            }))}
                                         />
                                     </Col>
 
@@ -1125,6 +1139,20 @@ class Invoice extends Component {
                                     <Button type={'button'} onClick={() => this.calculate()}>
                                         Рассчитать
                                     </Button>
+                                </Col>
+                                    <Col md={6} xs={6} className={'print-conatiner'}>
+                                        <ReactToPrint
+                                            trigger={() => <Button>Распечатать</Button>}
+                                            content={() => this.componentRef}
+                                        />
+                                    </Col>
+                                    <Col md={6} xs={6} className={'print-conatiner'}>
+                                        <ReactToPrint
+                                            trigger={() => <Button>Распечатать накладную</Button>}
+                                            content={() => this.componentRef1}
+                                        />
+                                    </Col>
+                                <Col md={12} xs={12} className={'oformit-container'}>
                                     <Button type={'submit'}>
                                         Оформить
                                     </Button>
@@ -1146,14 +1174,10 @@ class Invoice extends Component {
                                             sum={final_sum}
                                             ref={el => (this.componentRef = el)}/>
                                     </div>
+                                    <div style={{display: 'none'}}>
+                                        <PrintInvoice ref={el => (this.componentRef1 = el)} />
+                                    </div>
                                 </Col>
-                                <Col md={12} xs={12} className={'print-conatiner'}>
-                                    <ReactToPrint
-                                        trigger={() => <Button>Распечатать</Button>}
-                                        content={() => this.componentRef}
-                                    />
-                                </Col>
-
                             </Col>
                             <Col xs={12} md={6} className={'form-padding total-sum'}>
                                 <Col className={'total-text'}>
@@ -1162,7 +1186,7 @@ class Invoice extends Component {
                                     </p>
                                 </Col>
                                 <Col className={'total-number'}>
-                                    <p><b>{this.props.summary.discount ? this.props.summary.discount : '0'} сум</b></p>
+                                    <p><b>{this.props.summary.discount ? this.props.summary.discount.toFixed(2) : final_sum} сум</b></p>
                                 </Col>
                             </Col>
                         </Col>

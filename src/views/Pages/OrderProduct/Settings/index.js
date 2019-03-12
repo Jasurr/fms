@@ -13,13 +13,19 @@ class Settings extends Component {
     }
 
     render() {
-        const {is_volume, is_weight} = this.state
-        let dis_volume = false, dis_weight = false
+        const {is_volume, is_weight, is_default} = this.state
+        let dis_volume = false, dis_weight = false, dis_default=false
         if (is_volume) {
             dis_weight = true;
+            dis_default=true;
             dis_volume = false
         } else if (is_weight) {
             dis_weight=false
+            dis_default=true
+            dis_volume = true
+        } else if (is_default) {
+            dis_weight=true
+            dis_default=false
             dis_volume = true
         }
         return (<div style={{padding: 20}}>
@@ -54,6 +60,20 @@ class Settings extends Component {
                     По объему
                 </p>
             </div>
+            <div style={{display: 'flex', flexDirection: 'row', paddingLeft: 20}}>
+                <label className="container-checkbox">
+                    <input type={'checkbox'}
+                           id={'to_be_picked'}
+                           disabled={dis_default}
+                           checked={this.state.is_default}
+                           onChange={() => this.setState({is_default: !this.state.is_default})}
+                    />
+                    <span className="checkmark"/>
+                </label>
+                <p>
+                    По умолчанию
+                </p>
+            </div>
             <p>Сумма по тарифу:</p>
             <div style={{display: 'flex', flexDirection: 'row', paddingLeft: 20}}>
                 <FormGroup>
@@ -69,10 +89,11 @@ class Settings extends Component {
             <div style={{display: 'flex', flexDirection: 'row', padding: 20, justifyContent: 'flex-end', alignContent: 'flex-end'}}>
                 <Button type={'submit'}
                         onClick={() => {
-                            if (this.state.is_volume || this.state.is_weight) {
+                            if (this.state.is_volume || this.state.is_weight || this.state.is_default) {
                                 this.props.setSettings({
                                     is_weight: this.state.is_weight,
                                     is_volume: this.state.is_volume,
+                                    is_default: this.state.is_default,
                                     tariff_summ: this.state.tariff_summ
                                 });
                                 this.props.close()

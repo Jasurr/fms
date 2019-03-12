@@ -77,7 +77,8 @@ const initialState = {
     notifications: [],
     settings: {
         is_weight: false,
-        is_volume: true,
+        is_volume: false,
+        is_default: true,
         tariff_summ: 6000
     },
     summary: {}
