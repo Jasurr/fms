@@ -16,7 +16,7 @@ class ComponentToPrint extends React.Component {
             receiver_phone,
             receiver_organization
         } = this.props
-        console.log(this.props.data)
+
         return (
             <div className={'print-container'}>
                 <table className="table table-bordered" style={{

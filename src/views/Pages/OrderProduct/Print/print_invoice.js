@@ -6,7 +6,7 @@ import './styles.css'
 
 class PrintInvoice extends React.Component {
     render() {
-
+        const {date, sender_f_l_m, receiver_f_l_m} = this.props.invoiceData
         return (
             <div className={'print-container'}>
                 <div style={{width: 800, height: '100%', backgroundColor: '#fff', border: '1px solid red'}}>
@@ -63,20 +63,9 @@ class PrintInvoice extends React.Component {
                         </thead>
                         <tbody>
                         <tr>
-                            <td>25.02.2019</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>25.02.2019</td>
-                            <td></td>
-                            <td></td>
+                            <td>{date}</td>
+                            <td>{sender_f_l_m}</td>
+                            <td>{receiver_f_l_m}</td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -167,5 +156,7 @@ class PrintInvoice extends React.Component {
 }
 
 export default connect(
-
+    (state) => ({
+        invoiceData: state.orderProduct.invoce_list
+    })
 )(PrintInvoice)
