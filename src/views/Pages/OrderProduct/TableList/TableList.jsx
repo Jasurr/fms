@@ -93,7 +93,7 @@ class ProductTable extends React.Component {
         let settings = this.props.settings
         var product
         let volumeArr
-        let final_quantity = 0, final_weight = 0, final_volume = 0
+        let final_quantity = 0, final_weight = 0, final_volume = ''
         const {products} = this.props
         if (products !== undefined) {
             product = this.props.products.map(function (product) {
@@ -185,14 +185,14 @@ class ProductTable extends React.Component {
 function volume(width, height, length, weight, tariff_summ) {
     let volume = 0;
     let result = ''
-    if (width > 0 && height > 0 && length > 0 && weight > 0) {
+    if (width > 0 && height > 0 && length > 0 && tariff_summ > 0 && tariff_summ !== undefined) {
         // console.log('asas')
         volume = width * height * length / parseInt(tariff_summ);
-        if (volume > weight) {
-            result = Math.ceil(volume)
-        } else {
-            result = Math.ceil(weight)
-        }
+            result = volume&&volume.toFixed(2)
+        // if (volume > weight) {
+        // } else {
+        //     result = Math.ceil(weight)
+        // }
     }
     return result
 }

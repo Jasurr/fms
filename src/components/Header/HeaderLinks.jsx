@@ -52,18 +52,50 @@ class HeaderLinks extends Component {
                     show={this.state.showFilter}
                 >
                     <div style={{
-                        padding: 20
+                        padding: 20,
+                        height: 300
                     }}>
                         <h4>Фильтр</h4>
                         <hr />
-                        <Col xs={4} md={4}>
+                        <Col xs={1} md={1} >
+                            <p>От: </p>
+                        </Col>
+                        <Col xs={4} md={4} style={{display: 'flex', flexDirection: 'row'}}>
                             <FormGroup>
                                 <FormControl
                                     type={'date'}
-
                                 />
                             </FormGroup>
                         </Col>
+                        <Col xs={2} md={2}/>
+                        <Col xs={1} md={1} >
+                            <p>До: </p>
+                        </Col>
+                        <Col xs={4} md={4} style={{display: 'flex', flexDirection: 'row'}}>
+                            <FormGroup>
+                                <FormControl
+                                    type={'date'}
+                                />
+                            </FormGroup>
+                        </Col>
+                            <Button style={{
+                               position: 'absolute',
+                                bottom: 20,
+                                right: 20,
+                                backgroundColor: '#1D5C90',
+                                color: '#ffffff'
+                            }}
+                                    onClick={() => {
+
+                                    }}
+                            >Пременить</Button>
+                        <Button style={{
+                            position: 'absolute',
+                            bottom: 20,
+                            left: 20,
+                        }}
+                                onClick={() => this.setState({showFilter: false})}
+                        >Отменить</Button>
                     </div>
                 </Modal>
                 <Navbar.Form pullLeft>

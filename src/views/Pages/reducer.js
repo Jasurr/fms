@@ -43,7 +43,8 @@ export const clearProducts = () => {
         invoce_list: {
             INN: '',
             region: ''
-        }
+        },
+        summary: {}
     }
 }
 export const setSettings = (data) => {
@@ -65,7 +66,6 @@ const initialState = {
             height: '',
             weight: '',
             quantity: '',
-            method: {},
             total_weight: '',
         }
     ],
@@ -79,7 +79,8 @@ const initialState = {
         is_weight: false,
         is_volume: true,
         tariff_summ: 6000
-    }
+    },
+    summary: {}
 };
 
 
@@ -165,6 +166,12 @@ export default (state = initialState, action) => {
                 ...state,
                 status: action.payload.response.data
             }
+        case Routines.admin.calculate.SUCCESS:
+            console.log('action.response ',action.payload.response)
+            return {
+                ...state,
+                summary: action.payload.response
+            }
         case 'Search_Text':
             let cash1 = false, card1 = false, transfer1 = false
             if (action.data.payment_method === 'Cash') {
@@ -237,7 +244,8 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 invoce_list: {},
-                products: action.data
+                products: action.data,
+                summary: action.summary
             }
         case Routines.admin.tarifList.SUCCESS:
             return {

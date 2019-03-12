@@ -15,9 +15,10 @@ import Loading from "../../../components/Loading";
 import NotificationSystem from "react-notification-system";
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
-import {cities, discount, regions} from "../../../assets/Data/data";
+import {_discount, cities, regions} from "../../../assets/Data/data";
 import Autocomplete from 'react-autocomplete'
 import Settings from './Settings/index'
+
 var Barcode = require('react-barcode');
 
 //eslint-disable import/first
@@ -71,6 +72,15 @@ class Invoice extends Component {
             sum: 0,
             showSettings: false,
             final_summ: 0,
+            kg: false,
+            package: this.props.products,
+            tariff: 0,
+            for_additional_kg: 0,
+            transfer: false,
+            to_be_delivered: false,
+            to_be_picked: false,
+            to_be_region: false,
+            to_be_city: false,
             _notificationSystem: null,
             ...this.props.invoceData,
             date: this.props.invoceData.created_date && this.props.invoceData.created_date.slice(0, 10),
@@ -87,6 +97,7 @@ class Invoice extends Component {
         Routines.admin.methodList({}, dispatch)
         Routines.admin.boxList({}, dispatch)
     }
+
     showNotification(label, error) {
         var _notificationSystem = this.refs.notificationSystem;
 
@@ -202,6 +213,7 @@ class Invoice extends Component {
     getElement(id) {
         return document.getElementById(id)
     }
+
     hasError = (data) => {
         if (data) {
             let a = data.value.length > 0
@@ -212,6 +224,7 @@ class Invoice extends Component {
             if (a) data.style.borderColor = '#fff'
         }
     }
+
     addRow() {
         let rows = this.state.rows
         let value = rows.map((row, key) => `package${row}`)
@@ -220,9 +233,9 @@ class Invoice extends Component {
             rows: rows
         })
     }
+
     handleScan(data) {
         const {dispatch, invoceData, reset} = this.props
-
         let resetFields = {
             ...invoceData
         }
@@ -235,10 +248,8 @@ class Invoice extends Component {
                 reset()
                 this.setState({
                     result: data,
-
                 })
                 this.props.initialize(resetFields, true)
-
             })
             .catch(err => {
 
@@ -306,26 +317,32 @@ class Invoice extends Component {
     }
 
     calculate() {
-        const {dispatch, reset, settings} = this.props
+        const {dispatch, reset, settings, products} = this.props
         const {is_weight, is_volume, tariff_summ} = settings
-        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city } = this.state
-        let kg = (is_weight) ? true : false;
+        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city} = this.state
+        let tarif = this.findTarif()
+        let kg = !!is_weight
+        let discount1 = discount ? discount : 0
         Routines.admin.calculate({
             request: {
+                package: products.map(item => {
+                    return {
+                        title: item.title,
+                        width: parseFloat(item.width),
+                        height: parseFloat(item.height),
+                        length: parseFloat(item.length),
+                        weight: parseFloat(item.weight),
+                        quantity: parseFloat(item.quantity)
+                    }
+                }),
                 kg: kg,
-                discount:discount,
-                // width: 2,
-                // height: 23,
-                // length: '',
-                // weight: '',
-                // quantity: '',
-                tariff: '',
-                for_additional_kg: tariff_summ,
+                discount: parseFloat(discount1),
+                tariff: 4,
                 transit: transfer,
-                to_be_delivered,
+                to_be_city,
                 to_be_picked,
                 to_be_region,
-                to_be_city: ''
+                for_additional_kg: parseFloat(tariff_summ)
             }
         }, dispatch)
     }
@@ -333,8 +350,8 @@ class Invoice extends Component {
     render() {
         const {serial_code, to_be_delivered, history} = this.props.invoceData
         const {data, boxList, tarifList, methodList, products} = this.props
-        let tarif=''
-        let final_sum =''
+        let tarif = ''
+        let final_sum = ''
 
         let cash_disabled, card_diabled, transfer_disabled, sender_disabled, receiver_disabled
         const {payment_cash, payment_card, payment_transfer, to_be_paid_receiver, to_be_paid_sender} = this.state
@@ -408,17 +425,25 @@ class Invoice extends Component {
                 <h4>
                     Форма заполнения накладной
                     <button style={{
-                            backgroundColor: 'transparent',
-                            border: 0
-                        }}
-                        onClick={() => {
-                            this.props.clearProducts()
-                            this.props.history.go('/main')
-                        }}
+                        backgroundColor: 'transparent',
+                        border: 0,
+                        position: 'absolute',
+                        right: 10,
+                        top: 50,
+                        padding: '1px 15px',
+                        // backgroundColor: '#ff6957',
+                        borderRadius: 5
+                    }}
+                            onClick={() => {
+                                this.props.clearProducts()
+                                this.props.history.go('/main')
+                            }}
                     >
-                        <img width={15} src={require('../../../assets/img/delete-file.png')}/> <span style={{
-                            fontSize: 12
-                        }}>Clear</span>
+                        <span style={{
+                            fontSize: 14,
+                            fontWeight: '600',
+                            color: '#ff571d',
+                        }}>Очистить</span>
                     </button>
                 </h4>
                 {(false) && <Loading/>}
@@ -530,35 +555,35 @@ class Invoice extends Component {
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
                                         <FormGroup>
                                             <Autocomplete
-                                            getItemValue={(item) => item.label}
-                                            items={cities}
-                                            inputProps={{ className: 'form-control', placeholder: 'Город'}}
-                                            shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
-                                            menuStyle={{
-                                                borderRadius: '5px',
-                                                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
-                                                background: 'rgba(255, 255, 255, 0.9)',
-                                                padding: '2px 4px',
-                                                fontSize: '90%',
-                                                position: 'fixed',
-                                                overflow: 'auto',
-                                                maxHeight: '50%',
-                                                zIndex: 999
-                                            }}
-                                            renderItem={(item, isHighlighted) =>
-                                            <div style={{
-                                                background: isHighlighted ? '#ddecff' : 'white',
-                                                padding: '4px 8px',
-                                            }}>
-                                                <p style={{
-                                                    fontWeight: isHighlighted ? '600' : '400',
-                                                    fontSize: 12
-                                                }}>{item.label}</p>
-                                            </div>
-                                        }
-                                            value={this.state.sender_city}
-                                            onChange={(e) => this.setState({sender_city: e.target.value})}
-                                            onSelect={(sender_city) => this.setState({ sender_city })}
+                                                getItemValue={(item) => item.label}
+                                                items={cities}
+                                                inputProps={{className: 'form-control', placeholder: 'Город'}}
+                                                shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                                                menuStyle={{
+                                                    borderRadius: '5px',
+                                                    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
+                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                    padding: '2px 4px',
+                                                    fontSize: '90%',
+                                                    position: 'fixed',
+                                                    overflow: 'auto',
+                                                    maxHeight: '50%',
+                                                    zIndex: 999
+                                                }}
+                                                renderItem={(item, isHighlighted) =>
+                                                    <div style={{
+                                                        background: isHighlighted ? '#ddecff' : 'white',
+                                                        padding: '4px 8px',
+                                                    }}>
+                                                        <p style={{
+                                                            fontWeight: isHighlighted ? '600' : '400',
+                                                            fontSize: 12
+                                                        }}>{item.label}</p>
+                                                    </div>
+                                                }
+                                                value={this.state.sender_city}
+                                                onChange={(e) => this.setState({sender_city: e.target.value})}
+                                                onSelect={(sender_city) => this.setState({sender_city})}
                                             />
                                         </FormGroup>
                                     </Col>
@@ -613,8 +638,8 @@ class Invoice extends Component {
                                                 isSearchable={true}
                                                 onChange={(selectedOption) => this.setState({sender_region: selectedOption})}
                                                 options={tarifList && tarifList.map(item => ({
-                                                    value: item.city_from_a.title,
-                                                    label: item.city_from_a.title
+                                                        value: item.city_from_a.title,
+                                                        label: item.city_from_a.title
                                                     })
                                                 )}
                                             />
@@ -670,7 +695,7 @@ class Invoice extends Component {
                                             <Autocomplete
                                                 getItemValue={(item) => item.label}
                                                 items={cities}
-                                                inputProps={{ className: 'form-control', placeholder: 'Город'}}
+                                                inputProps={{className: 'form-control', placeholder: 'Город'}}
                                                 shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
                                                 menuStyle={{
                                                     borderRadius: '5px',
@@ -696,7 +721,7 @@ class Invoice extends Component {
                                                 }
                                                 value={this.state.receiver_city}
                                                 onChange={(e) => this.setState({receiver_city: e.target.value})}
-                                                onSelect={(receiver_city) => this.setState({ receiver_city })}
+                                                onSelect={(receiver_city) => this.setState({receiver_city})}
                                             />
                                         </FormGroup>
                                     </Col>
@@ -769,11 +794,14 @@ class Invoice extends Component {
                                         />
                                     </Col>
                                     <Col xs={12} md={12} className={'form-padding checkbox-container '}>
-                                        {/*<p>До востребования</p>*/}
-                                        {/*<label className="container-checkbox">*/}
-                                        {/*<input type="checkbox"/>*/}
-                                        {/*<span className="checkmark"/>*/}
-                                        {/*</label>*/}
+                                        <p>Отправить <b>СМС</b> получателью</p>
+                                        <label className="container-checkbox">
+                                            <input
+                                                checked={this.state.boolfield}
+                                                onChange={() => this.setState({boolfield: !this.state.boolfield})}
+                                                type="checkbox"/>
+                                            <span className="checkmark"/>
+                                        </label>
                                     </Col>
                                 </Col>
                             </Col>
@@ -781,22 +809,22 @@ class Invoice extends Component {
                             <Col xs={12} md={12} className={'form-padding '}>
                                 <Col className={'header-form table-volume-container'}>
                                     <p>3 Описание груза</p>
-                                <button
-                                    type={'button'}
-                                    onClick={() => this.setState({showSettings: !this.state.showSettings})}
-                                    style={{
-                                        backgroundColor: 'transparent',
-                                        border: 0,
-                                        margin:10,
-                                        padding: 0,
-                                    }}>
-                                  <img
-                                      style={{
-                                          margin:0,
-                                          padding: 0,
-                                      }}
-                                      src={require('./Recources/settings2.png')} />
-                                </button>
+                                    <button
+                                        type={'button'}
+                                        onClick={() => this.setState({showSettings: !this.state.showSettings})}
+                                        style={{
+                                            backgroundColor: 'transparent',
+                                            border: 0,
+                                            margin: 10,
+                                            padding: 0,
+                                        }}>
+                                        <img
+                                            style={{
+                                                margin: 0,
+                                                padding: 0,
+                                            }}
+                                            src={require('./Recources/settings2.png')}/>
+                                    </button>
                                 </Col>
                             </Col>
                             <Col xs={12} md={12} className={'form-padding table-container'}>
@@ -869,7 +897,20 @@ class Invoice extends Component {
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
                                     <Col xs={12} md={12} className={'avia-trucking-container first'}>
                                         <p>
-                                            Вызов курьера
+                                            Вызов курьера до города
+                                        </p>
+                                        <label className="container-checkbox">
+                                            <input type={'checkbox'}
+                                                   id={'to_be_picked'}
+                                                   checked={this.state.to_be_picked}
+                                                   onChange={e => this.setState({to_be_picked: !this.state.to_be_picked})}
+                                            />
+                                            <span className="checkmark"/>
+                                        </label>
+                                    </Col>
+                                    <Col xs={12} md={12} className={'avia-trucking-container first'}>
+                                        <p>
+                                            Вызов курьера до района
                                         </p>
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
@@ -892,7 +933,7 @@ class Invoice extends Component {
                                         </label>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding'}>
-                                        <p>Доставка до региона</p>
+                                        <p>Доставка до района</p>
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_delivered'}
@@ -935,7 +976,7 @@ class Invoice extends Component {
                                 </Col>
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
                                     <Col xs={12} md={12} className={'avia-trucking-container first'}>
-                                            <div className="input-group container-check">
+                                        <div className="input-group container-check">
                                                 <span className="input-group-addon">
                                                 <label className="container-checkbox">
                                                   <input type={'checkbox'}
@@ -946,18 +987,18 @@ class Invoice extends Component {
                                                      <span className="checkmark"/>
                                                     </label>
                                                 </span>
-                                                <CurrencyInput
+                                            <CurrencyInput
                                                 ref="myinput"
                                                 id={'payment_cash'}
                                                 precision=""
-                                                 className="form-control"
-                                                 readOnly={!this.state.payment_cash}
-                                                 placeholder={'Наличие'}
-                                                 />
-                                            </div>
+                                                className="form-control"
+                                                readOnly={!this.state.payment_cash}
+                                                placeholder={'Наличие'}
+                                            />
+                                        </div>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding'}>
-                                    <div className="input-group container-check">
+                                        <div className="input-group container-check">
                                         <span className="input-group-addon">
                                         <label className="container-checkbox">
                                           <input type={'checkbox'}
@@ -968,17 +1009,17 @@ class Invoice extends Component {
                                              <span className="checkmark"/>
                                             </label>
                                         </span>
-                                        <CurrencyInput
-                                          ref="myinput"
-                                          precision=""
-                                          readOnly={!this.state.payment_card}
-                                         className="form-control"
-                                         placeholder={'Пластиковая карта'}
-                                         />
-                                    </div>
+                                            <CurrencyInput
+                                                ref="myinput"
+                                                precision=""
+                                                readOnly={!this.state.payment_card}
+                                                className="form-control"
+                                                placeholder={'Пластиковая карта'}
+                                            />
+                                        </div>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding last'}>
-                                    <div className="input-group container-check">
+                                        <div className="input-group container-check">
                                         <span className="input-group-addon">
                                         <label className="container-checkbox">
                                           <input type={'checkbox'}
@@ -989,51 +1030,53 @@ class Invoice extends Component {
                                              <span className="checkmark"/>
                                             </label>
                                         </span>
-                                        <CurrencyInput
-                                          ref="myinput"
-                                          precision=""
-                                          className="form-control"
-                                          readOnly={!this.state.payment_transfer}
-                                          placeholder={'Перечислением'}
-                                         />
-                                    </div>
+                                            <CurrencyInput
+                                                ref="myinput"
+                                                precision=""
+                                                className="form-control"
+                                                readOnly={!this.state.payment_transfer}
+                                                placeholder={'Перечислением'}
+                                            />
+                                        </div>
                                     </Col>
-                                    <Col xs={12} md={12} className={'avia-trucking-container form-padding sale-container'}>
-                                            <FormGroup>
-                                                <Autocomplete
-                                                    getItemValue={(item) => item.label}
-                                                    items={discount}
-                                                    inputProps={{ className: 'form-control', placeholder: 'Скидки(%)'}}
-                                                    shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
-                                                    menuStyle={{
-                                                        borderRadius: '5px',
-                                                        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
-                                                        background: 'rgba(255, 255, 255, 0.9)',
-                                                        padding: '2px 4px',
-                                                        fontSize: '90%',
-                                                        position: 'fixed',
-                                                        overflow: 'auto',
-                                                        maxHeight: '50%',
-                                                        zIndex: 999
-                                                    }}
-                                                    renderItem={(item, isHighlighted) =>
-                                                        <div style={{
-                                                            background: isHighlighted ? '#ddecff' : 'white',
-                                                            padding: '4px 8px',
-                                                        }}>
-                                                            <p style={{
-                                                                fontWeight: isHighlighted ? '600' : '400',
-                                                                fontSize: 12
-                                                            }}>{item.label}</p>
-                                                        </div>
-                                                    }
-                                                    value={this.state.sender_city}
-                                                    onChange={(e) => this.setState({sender_city: e.target.value})}
-                                                    onSelect={(sender_city) => this.setState({ sender_city })}
-                                                />
-                                            </FormGroup>
+                                    <Col xs={12} md={12}
+                                         className={'avia-trucking-container form-padding sale-container'}>
+                                        <FormGroup>
+                                            <Autocomplete
+                                                getItemValue={(item) => item.label}
+                                                items={_discount}
+                                                inputProps={{className: 'form-control', placeholder: 'Скидки(%)'}}
+                                                shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
+                                                menuStyle={{
+                                                    borderRadius: '5px',
+                                                    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
+                                                    background: 'rgba(255, 255, 255, 0.9)',
+                                                    padding: '2px 4px',
+                                                    fontSize: '90%',
+                                                    position: 'fixed',
+                                                    overflow: 'auto',
+                                                    maxHeight: '50%',
+                                                    zIndex: 999
+                                                }}
+                                                renderItem={(item, isHighlighted) =>
+                                                    <div style={{
+                                                        background: isHighlighted ? '#ddecff' : 'white',
+                                                        padding: '4px 8px',
+                                                    }}>
+                                                        <p style={{
+                                                            fontWeight: isHighlighted ? '600' : '400',
+                                                            fontSize: 12
+                                                        }}>{item.label}</p>
+                                                    </div>
+                                                }
+                                                value={this.state.discount}
+                                                onChange={(e) => this.setState({discount: e.target.value})}
+                                                onSelect={(discount) => this.setState({discount})}
+                                            />
+                                        </FormGroup>
                                     </Col>
-
+                                    <Col xs={12} md={12} className={'form-padding empty-container'}>
+                                    </Col>
                                     <Col xs={12} md={12} className={'form-padding trucking-sub-container'}>
                                         <p>Получатель</p>
                                         <label className="container-checkbox">
@@ -1119,7 +1162,7 @@ class Invoice extends Component {
                                     </p>
                                 </Col>
                                 <Col className={'total-number'}>
-                                    <p><b>{final_sum ? final_sum : '0'} сум</b></p>
+                                    <p><b>{this.props.summary.discount ? this.props.summary.discount : '0'} сум</b></p>
                                 </Col>
                             </Col>
                         </Col>
@@ -1149,7 +1192,8 @@ const mapStateToProps = (state, ownPops) => {
         tarifList: state.orderProduct.tarifList,
         methodList: state.orderProduct.methodList,
         searchProcessing: state.searchText.processing,
-        settings: state.orderProduct.settings
+        settings: state.orderProduct.settings,
+        summary: state.orderProduct.summary,
     };
 };
 const mapsDispatch = dispatch => {

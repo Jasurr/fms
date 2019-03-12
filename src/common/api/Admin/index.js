@@ -18,7 +18,7 @@ export default api => {
             return api.get('invoice/received/list')
         },
         calculate: data => {
-            return api.post('invoice/total/price')
+            return api.post('invoice/total/price', data)
         },
 
         getRegions: data => {
