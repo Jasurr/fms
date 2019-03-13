@@ -1192,7 +1192,7 @@ class Invoice extends Component {
                                     </p>
                                 </Col>
                                 <Col className={'total-number'}>
-                                    <p><b>{this.props.summary.discount ? this.props.summary.discount.toFixed(2) : final_sum} сум</b></p>
+                                    <p><b>{this.props.summary&&this.props.summary.discount ? this.props.summary.discount.toFixed(2) : (final_sum?final_sum: '0')} сум</b></p>
                                 </Col>
                             </Col>
                         </Col>
