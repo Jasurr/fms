@@ -319,10 +319,11 @@ class Invoice extends Component {
 
     calculate() {
         const {dispatch, reset, settings, products} = this.props
-        const {is_weight, is_volume, tariff_summ} = settings
-        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city} = this.state
+        const {is_weight, is_volume, tariff_summ, is_default} = settings
+        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city, sender_region, receiver_region} = this.state
         let tarif = this.findTarif()
         let kg = !!is_weight
+
         let discount1 = discount ? discount : 0
         Routines.admin.calculate({
             request: {
@@ -336,9 +337,12 @@ class Invoice extends Component {
                         quantity: parseFloat(item.quantity)
                     }
                 }),
-                kg: kg,
                 discount: parseFloat(discount1),
-                tariff: 4,
+                sender_region: parseInt(sender_region),
+                reciever_region: parseInt(receiver_region),
+                is_weight,
+                is_volume,
+                is_default,
                 transit: transfer,
                 to_be_city,
                 to_be_picked,
@@ -353,7 +357,8 @@ class Invoice extends Component {
         const {data, boxList, tarifList, methodList, products} = this.props
         let tarif = ''
         let final_sum = ''
-
+        console.log('receiver_region', this.state.sender_region)
+        console.log('receiver_region', this.state.receiver_region)
         let cash_disabled, card_diabled, transfer_disabled, sender_disabled, receiver_disabled
         const {payment_cash, payment_card, payment_transfer, to_be_paid_receiver, to_be_paid_sender} = this.state
         if (payment_cash) {
