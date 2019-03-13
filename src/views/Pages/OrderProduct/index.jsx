@@ -550,6 +550,7 @@ class Invoice extends Component {
                                         </FormGroup>
                                     </Col>
                                 </Col>
+
                                 <Col md={4} xs={12}>
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
 
