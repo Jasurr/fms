@@ -43,7 +43,6 @@ class TableList extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (this.props.products !== nextProps.products) {
             this.setState({products: nextProps.products})
-            this.props.finalSum()
         }
     }
 
@@ -63,7 +62,6 @@ class TableList extends React.Component {
             return product;
         });
         // this.setState({products: newProducts});
-        this.props.finalSum()
         this.props.fillRow(newProducts)
 
     };
@@ -275,7 +273,6 @@ const mapsStateToProps = state => {
     return {
         products: state.orderProduct.products,
         tarifList: state.orderProduct.tarifList,
-        methodList: state.orderProduct.methodList,
         settings: state.orderProduct.settings
     }
 }

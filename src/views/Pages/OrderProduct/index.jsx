@@ -5,18 +5,17 @@ import {Routines} from 'common/api';
 import './styles.css'
 import CurrencyInput from 'react-currency-input';
 import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Modal, Row} from "react-bootstrap";
-import {formValueSelector, reduxForm} from 'redux-form'
+import {reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
 import ReactToPrint from "react-to-print";
 import ComponentToPrint from "./Print/index";
 import PrintInvoice from "./Print/print_invoice";
 import {clearProducts} from "../reducer";
-import Loading from "../../../components/Loading";
 import NotificationSystem from "react-notification-system";
 import InputMask from 'react-input-mask';
 import Select from 'react-select';
-import {_discount, cities, regions} from "../../../assets/Data/data";
+import {_discount, cities} from "../../../assets/Data/data";
 import Autocomplete from 'react-autocomplete'
 import Settings from './Settings/index'
 
@@ -71,31 +70,35 @@ class Invoice extends Component {
             city_to_a: '',
             tarif: '',
             sum: 0,
+            region: '',
+            box: '',
             showSettings: false,
             final_summ: 0,
             kg: false,
             package: this.props.products,
             tariff: 0,
+            validate: false,
             for_additional_kg: 0,
-            transfer: false,
-            to_be_delivered: false,
-            to_be_picked: false,
-            to_be_region: false,
-            to_be_city: false,
+            transit: false,
+            to_be_taken_from_inside_city: false,
+            to_be_taken_from_outside_city: false,
+            to_be_delivered_to_inside_city: false,
+            to_be_delivered_to_outside_city: false,
             _notificationSystem: null,
             ...this.props.invoceData,
+            receiver_post_index: this.props.invoceData.receiver_post_index ? this.props.invoceData.receiver_post_index : 0,
             date: this.props.invoceData.created_date && this.props.invoceData.created_date.slice(0, 10),
             time: this.props.invoceData.created_date && this.props.invoceData.created_date.slice(11, 16)
         }
         this.handleScan = this.handleScan.bind(this)
-        this.finalSumm = this.finalSumm.bind(this)
+        this.form = React.createRef();
+        this.validate = this.validate.bind(this);
     }
 
     componentDidMount() {
         const {dispatch} = this.props
         Routines.admin.getRegions({}, dispatch)
         Routines.admin.tarifList({}, dispatch)
-        Routines.admin.methodList({}, dispatch)
         Routines.admin.boxList({}, dispatch)
     }
 
@@ -116,15 +119,27 @@ class Invoice extends Component {
     }
 
     onSubmit(event) {
-        const {dispatch, products, delivery, reset} = this.props
-        this.checkInput()
-        this.finalSumm()
         event.preventDefault()
-        let tariff = this.findTarif()
+        const {dispatch, products, summary} = this.props
         const {
-            payment_card, payment_cash, payment_transfer, to_be_paid_sender, date, time,
-            sender_region, sender_f_l_m, sender_organization, sender_city, sender_phone, sender_line, receiver_f_l_m,
-            receiver_organization, receiver_city, receiver_region, receiver_line, receiver_phone, receiver_post_index, region, box, final_sum
+            payment_card,
+            payment_cash,
+            to_be_paid_sender,
+            payment_transfer,
+            discount,
+            region,
+            box,
+            INN,
+            sender_organization,
+            sender_f_l_m,
+            sender_country,
+            sender_region,
+            date,
+            time,
+            sender_city, sender_line, sender_email, sender_phone, receiver_organization, receiver_f_l_m,
+            receiver_country, receiver_region, receiver_city, receiver_email, receiver_phone, receiver_post_index,
+            transit, send_message, to_be_taken_from_inside_city, to_be_taken_from_outside_city, to_be_delivered_to_inside_city, to_be_delivered_to_outside_city,
+            paid, status
         } = this.state
         let payment_method
         let to_be_paid
@@ -140,99 +155,51 @@ class Invoice extends Component {
         } else {
             to_be_paid = "Receiver"
         }
-        let tarif
-        if (this.findTarif() !== undefined) {
-            tarif = this.findTarif().length > 0
-        }
-        if (tarif && sender_region && sender_phone && sender_f_l_m && sender_organization &&
-            sender_city && sender_line && receiver_f_l_m && receiver_organization && receiver_city && receiver_region
-            && receiver_line && receiver_phone && receiver_post_index && region && box) {
-            Routines.admin.createInvoice({
-                request: {
-                    ...this.state,
-                    payment_method,
-                    to_be_paid,
-                    box: box,
-                    tariff: tariff && tariff[0].id,
-                    package: products,
-                    delivery: null,
-                }
-            }, dispatch).then((res) => {
-                this.showNotification('success', {message: 'Сохранено успешно!'})
-            })
-        } else {
-            if (!tarif) {
-                this.showNotification('error', {message: 'Тариф не существует!'})
-            } else {
-                this.showNotification('error', {message: 'Некоторые поля не заполнено!'})
+        console.log('receiver_region', box)
+        console.log('region', region)
+        Routines.admin.createInvoice({
+            request: {
+                INN: '121212',
+                region: 2,
+                box: 1,
+                tariff: 1,
+
+                sender_organization: 'AAB1',
+                sender_f_l_m: 'Ilxom2',
+                sender_country,
+                sender_region: 'TASHKENT',
+                sender_city: 'Tashkent',
+                sender_line,
+                sender_email,
+                sender_phone: '+998(90)-223-12-12',
+
+                receiver_organization: 'AAA',
+                receiver_f_l_m: 'Alisher',
+                receiver_country,
+                receiver_region: 'SAMARQAND',
+                receiver_city: 'Samarqand',
+                receiver_email,
+                receiver_phone: '+998(90)-232-23-23',
+                receiver_post_index,
+                transit: false,
+                send_message: false,
+                to_be_taken_from_inside_city: false,
+                to_be_taken_from_outside_city: false,
+                to_be_delivered_to_inside_city: false,
+                to_be_delivered_to_outside_city: false,
+                status: 'New',
+                payment_method: 'Cash',
+                to_be_paid: 'Sender',
+                discount: discount ? discount : 0,
+                package: products,
+                total_price: 2000,
+                created_date: date + 'T' + time
             }
-        }
-
-
+        }, dispatch)
     }
 
-    checkInput() {
-        let region, s_fullname, s_organ, s_city, s_phone, s_line, s_region, r_fullname, r_organ
-        let r_city, r_region, r_line, r_phone, r_index, r_date, r_time
-        s_fullname = document.getElementById('sender_f_l_m')
-        s_organ = this.getElement('sender_organization')
-        s_city = this.getElement('sender_city')
-        s_phone = this.getElement('sender_phone')
-        s_line = this.getElement('sender_line')
-        s_region = this.getElement('sender_region')
-        r_fullname = this.getElement('receiver_f_l_m')
-        r_organ = this.getElement('receiver_organization')
-        r_city = this.getElement('receiver_city')
-        r_region = this.getElement('receiver_region')
-        r_line = this.getElement('receiver_line')
-        r_phone = this.getElement('receiver_phone')
-        r_index = this.getElement('receiver_post_index')
-        r_date = this.getElement('date')
-        r_time = this.getElement('time')
-        region = this.getElement('region')
-        let box = this.getElement('box')
-
-        this.hasError(region)
-        this.hasError(box)
-        this.hasError(s_fullname)
-        this.hasError(s_city)
-        this.hasError(s_organ)
-        this.hasError(s_phone)
-        this.hasError(s_line)
-        this.hasError(s_region)
-        this.hasError(r_fullname)
-        this.hasError(r_organ)
-        this.hasError(r_city)
-        this.hasError(r_region)
-        this.hasError(r_phone)
-        this.hasError(r_line)
-        this.hasError(r_index)
-        this.hasError(r_date)
-        this.hasError(r_time)
-    }
-
-    getElement(id) {
-        return document.getElementById(id)
-    }
-
-    hasError = (data) => {
-        if (data) {
-            let a = data.value.length > 0
-            if (!a) {
-                data.style.borderColor = '#ff5f5a'
-                data.focus()
-            }
-            if (a) data.style.borderColor = '#fff'
-        }
-    }
-
-    addRow() {
-        let rows = this.state.rows
-        let value = rows.map((row, key) => `package${row}`)
-        rows.push(value)
-        this.setState({
-            rows: rows
-        })
+    validate() {
+        return this.form.current && this.form.current.reportValidity();
     }
 
     handleScan(data) {
@@ -257,72 +224,23 @@ class Invoice extends Component {
             })
     }
 
-    handleError(err) {
-        console.error(err)
-    }
-
-    findTarif() {
-        const {tarifList} = this.props
-        const {sender_region, receiver_region} = this.state
-        let tarif = ''
-        if (sender_region !== undefined && receiver_region !== undefined && tarifList) {
-            tarif = tarifList.filter(q => q.city_from_a.title === sender_region && q.city_to_a.title === receiver_region)
-        }
-        return tarif
-    }
-
-    additionalSumm() {
-        let tarif = this.findTarif()
-        const {methodList} = this.props
-        var tarif_price, method
-        if (tarif && tarif.length > 0 && methodList.length > 0) {
-            tarif_price = parseInt(tarif[0].price)
-            method = parseInt(methodList[0].for_additional_kg)
-        }
-        return {tarif_price, method}
-    }
-
-    finalSumm() {
-        const {products} = this.props
-        let final_sum = 0
-        if (products !== undefined) {
-            var volumeArr = products.map(item => {
-                return totalWeight(item.width, item.height, item.length, item.weight)
-            })
-            var finalWeight = 0
-            for (let i = 0; i < products.length; i++) {
-                finalWeight += volumeArr[i]
-            }
-
-            let arr = products.map(item => {
-                let result = 0
-                var sum = 0;
-                var tarif_price, method, count
-                result = totalWeight(parseInt(item.width), parseInt(item.height), parseInt(item.length), parseInt(item.weight))
-                tarif_price = this.additionalSumm().tarif_price
-                method = this.additionalSumm().method
-                count = parseInt(result) * parseInt(item.quantity)
-                for (var i = 1; i < count; i++) {
-                    if (method && tarif_price) {
-                        sum = method * i + tarif_price;
-                    }
-                }
-                return sum
-            })
-
-            for (let a = 0; a < arr.length; a++) {
-                final_sum += arr[a]
-            }
-        }
-        return final_sum
-    }
-
     calculate() {
-        const {dispatch, reset, settings, products} = this.props
+        const {dispatch, reset, settings, products, data} = this.props
         const {is_weight, is_volume, tariff_summ, is_default} = settings
-        const {discount, transfer, to_be_picked, to_be_delivered, to_be_region, to_be_city, sender_region, receiver_region} = this.state
-        let tarif = this.findTarif()
+        const {
+            discount,
+            transit,
+            to_be_delivered_to_outside_city,
+            to_be_taken_from_inside_city,
+            to_be_taken_from_outside_city,
+            to_be_delivered_to_inside_city,
+            sender_region,
+            receiver_region
+        } = this.state
         let kg = !!is_weight
+
+        let reg1 = data && data.filter(q => q.title === sender_region).map(item => item.id)[0]
+        let reg2 = data && data.filter(q => q.title === receiver_region).map(item => item.id)[0]
 
         let discount1 = discount ? discount : 0
         Routines.admin.calculate({
@@ -338,29 +256,36 @@ class Invoice extends Component {
                     }
                 }),
                 discount: parseFloat(discount1),
-                sender_region: parseInt(sender_region),
-                reciever_region: parseInt(receiver_region),
+                sender_region: parseInt(reg1),
+                reciever_region: parseInt(reg2),
                 is_weight,
                 is_volume,
                 is_default,
-                transit: transfer,
-                to_be_city,
-                to_be_picked,
-                to_be_region,
+                transit,
+                to_be_taken_from_inside_city,
+                to_be_taken_from_outside_city,
+                to_be_delivered_to_inside_city,
+                to_be_delivered_to_outside_city,
                 for_additional_kg: parseFloat(tariff_summ)
             }
         }, dispatch)
     }
 
+    onBlurText(event) {
+        if (event.target.value.length === 0) {
+            event.target.style.backgroundColor = '#ffecd5'
+            event.target.style.borderColor = '#ff6957'
+        } else {
+            event.target.style.backgroundColor = '#fff';
+            event.target.style.borderColor = 'lightgray'
+        }
+    }
+
     render() {
-        const {serial_code, to_be_delivered, history} = this.props.invoceData
-        const {data, boxList, tarifList, methodList, products} = this.props
-        let tarif = ''
-        let final_sum = ''
-        console.log('receiver_region', this.state.sender_region)
-        console.log('receiver_region', this.state.receiver_region)
+        const {serial_code, to_be_delivered} = this.props.invoceData
+        const {data, products, boxList, isValid} = this.props
         let cash_disabled, card_diabled, transfer_disabled, sender_disabled, receiver_disabled
-        const {payment_cash, payment_card, payment_transfer, to_be_paid_receiver, to_be_paid_sender} = this.state
+        const {payment_cash, payment_card, payment_transfer, to_be_paid_receiver, to_be_paid_sender, validate} = this.state
         if (payment_cash) {
             cash_disabled = false
             card_diabled = true
@@ -403,13 +328,22 @@ class Invoice extends Component {
                     margin: 0
                 })
             },
-            control: (provided) => {
+            control: (provided, state) => {
                 return ({
                     ...provided,
                     height: 30,
                     padding: 0,
                     minHeight: 30,
                     borderRadius: 5,
+                    // borderColor: state.isFocused ?
+                    //     '#ddd' : isValid ?
+                    //         '#ddd' : 'red',
+                    // // overwrittes hover style
+                    // '&:hover': {
+                    //     borderColor: state.isFocused ?
+                    //         '#ddd' : isValid ?
+                    //             '#ddd' : 'red'
+                    // }
                 })
             },
             singleValue: (provided, state) => {
@@ -452,10 +386,8 @@ class Invoice extends Component {
                         }}>Очистить</span>
                     </button>
                 </h4>
-                {(false) && <Loading/>}
                 <NotificationSystem ref="notificationSystem"/>
-
-                <form onSubmit={(e) => this.onSubmit(e)}>
+                <form ref={this.form} onSubmit={(e) => this.onSubmit(e)}>
                     <Row>
                         <Col xs={12} md={6} className={'form-padding'}>
                             {/******* Header  *****/}
@@ -465,29 +397,29 @@ class Invoice extends Component {
                                         <FormControl
                                             placeholder={'INN'}
                                             type={'text'}
+                                            validate={validate}
                                             value={this.state.INN}
                                             onChange={(e) => this.setState({INN: e.target.value})}
                                         />
                                     </FormGroup>
                                 </Col>
                                 <Col xs={8} md={8} className={'form-padding'}>
-                                    {
-                                        console.log('REGION123', this.state.box)
-                                    }
                                     <Select
                                         name="form-field-name"
                                         id={'region'}
                                         styles={customStyles}
                                         placeholder={'TAS'}
                                         isSearchable
-                                        value={data && data.filter(q => q.id === this.state.region).map(item => ({value: item.id, label: item.short}))[0]}
-                                        onChange={(selectedOption) => this.setState({region: selectedOption})}
+                                        value={data && data.filter(q => q.id === this.state.region).map(item => ({
+                                            value: item.id,
+                                            label: item.short
+                                        }))[0]}
+                                        onChange={(selectedOption) => this.setState({region: selectedOption.value})}
                                         options={data && data.map(item => ({
                                             value: item.id,
                                             label: item.short
                                         }))}
                                     />
-
                                 </Col>
                                 <Col xs={4} md={4} className={'form-padding'}>
                                     <Select
@@ -495,13 +427,9 @@ class Invoice extends Component {
                                         id={'box'}
                                         styles={customStyles}
                                         placeholder={'Box'}
-                                        value={(boxList !== undefined && Array.isArray(boxList) && !boxList.detail) && boxList.filter(q => q.id === this.state.box).map(item => ({
-                                            value: item.id,
-                                            label: item.number
-                                        }))[0]}
                                         isSearchable={true}
-                                        onChange={(selectedOption) => this.setState({box: selectedOption})}
-                                        options={(boxList !== undefined && Array.isArray(boxList) && !boxList.detail) && boxList.map(item => ({
+                                        onChange={(selectedOption) => this.setState({box: selectedOption.value})}
+                                        options={boxList && boxList.map(item => ({
                                             value: item.id,
                                             label: item.number
                                         }))}
@@ -521,7 +449,7 @@ class Invoice extends Component {
                             </Col>
                             {/****** Header of new form Отправитель  ******/}
                             <Col xs={12} md={12} className={'form-padding '}>
-                                <Col className={'header-form'}><p>1 Отправитель</p></Col>
+                                <Col className={'header-form'}><p>1. Отправитель</p></Col>
                             </Col>
                             {/**** ?????????????????????? ***/}
                             <Col xs={12} md={12}>
@@ -531,7 +459,9 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'sender_f_l_m'}
-                                                placeholder={'Ф И О'}
+                                                placeholder={'Ф И О *'}
+                                                required
+                                                onBlur={(event) => this.onBlurText(event)}
                                                 type={'text'}
                                                 value={this.state.sender_f_l_m}
                                                 onChange={(e) => this.setState({sender_f_l_m: e.target.value})}
@@ -542,7 +472,9 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'sender_organization'}
-                                                placeholder={'Организация'}
+                                                placeholder={'Организация *'}
+                                                onBlur={(event) => this.onBlurText(event)}
+                                                required
                                                 type={'text'}
                                                 value={this.state.sender_organization}
                                                 onChange={(e) => this.setState({sender_organization: e.target.value})}
@@ -564,13 +496,17 @@ class Invoice extends Component {
                                             />
                                         </FormGroup>
                                     </Col>
-
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
                                         <FormGroup>
                                             <Autocomplete
                                                 getItemValue={(item) => item.label}
                                                 items={cities}
-                                                inputProps={{className: 'form-control', placeholder: 'Город'}}
+                                                inputProps={{
+                                                    className: 'form-control',
+                                                    placeholder: 'Город *',
+                                                    required: true,
+                                                    onBlur: (e) => this.onBlurText(e)
+                                                }}
                                                 shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
                                                 menuStyle={{
                                                     borderRadius: '5px',
@@ -601,15 +537,15 @@ class Invoice extends Component {
                                         </FormGroup>
                                     </Col>
                                 </Col>
-
-
                                 <Col md={4} xs={12}>
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
                                         <FormGroup>
                                             <InputMask mask="+\9\98(99)-999-99-99"
                                                        value={this.state.sender_phone}
-                                                       placeholder={'Телефон'}
+                                                       placeholder={'Телефон *'}
                                                        id={'sender_phone'}
+                                                       required
+                                                       onBlur={(event) => this.onBlurText(event)}
                                                        className={'form-control'}
                                                        onChange={(e) => this.setState({sender_phone: e.target.value})}
                                             />
@@ -632,7 +568,7 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'sender_line'}
-                                                placeholder={'Адресh'}
+                                                placeholder={'Адрес'}
                                                 type={'text'}
                                                 value={this.state.sender_line}
                                                 onChange={(e) => this.setState({sender_line: e.target.value})}
@@ -645,15 +581,16 @@ class Invoice extends Component {
                                                 name="form-field-name"
                                                 id={'sender_region'}
                                                 styles={customStyles}
-                                                placeholder={'Область'}
+                                                placeholder={'Область *'}
+                                                inputProps={{required: true}}
                                                 value={data && data.filter(q => q.title === this.state.sender_region).map(item => ({
-                                                    value: item.id,
+                                                    value: item.title,
                                                     label: item.title
                                                 }))[0]}
                                                 isSearchable={true}
                                                 onChange={(selectedOption) => this.setState({sender_region: selectedOption.value})}
                                                 options={data && data.map(item => ({
-                                                    value: item.id,
+                                                    value: item.title,
                                                     label: item.title
                                                 }))}
                                             />
@@ -664,7 +601,7 @@ class Invoice extends Component {
 
                             {/****** Header of new form Получатель  ******/}
                             <Col xs={12} md={12} className={'form-padding '}>
-                                <Col className={'header-form'}><p>2 Получатель</p></Col>
+                                <Col className={'header-form'}><p>2. Получатель</p></Col>
                             </Col>
                             <Col xs={12} md={12}>
                                 {/*********** 1 row ************/}
@@ -673,7 +610,9 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'receiver_f_l_m'}
-                                                placeholder={'Ф.И.О.'}
+                                                placeholder={'Ф.И.О. *'}
+                                                required
+                                                onBlur={(event) => this.onBlurText(event)}
                                                 type={'text'}
                                                 value={this.state.receiver_f_l_m}
                                                 onChange={(e) => this.setState({receiver_f_l_m: e.target.value})}
@@ -684,8 +623,10 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <FormControl
                                                 id={'receiver_organization'}
-                                                placeholder={'Организация'}
+                                                placeholder={'Организация *'}
+                                                required
                                                 type={'text'}
+                                                onBlur={(event) => this.onBlurText(event)}
                                                 value={this.state.receiver_organization}
                                                 onChange={(e) => this.setState({receiver_organization: e.target.value})}
                                             />
@@ -709,7 +650,12 @@ class Invoice extends Component {
                                             <Autocomplete
                                                 getItemValue={(item) => item.label}
                                                 items={cities}
-                                                inputProps={{className: 'form-control', placeholder: 'Город'}}
+                                                inputProps={{
+                                                    className: 'form-control',
+                                                    placeholder: 'Город *',
+                                                    required: true,
+                                                    onBlur: (e) => this.onBlurText(e)
+                                                }}
                                                 shouldItemRender={(item, value) => item.label.toLowerCase().indexOf(value.toLowerCase()) > -1}
                                                 menuStyle={{
                                                     borderRadius: '5px',
@@ -747,15 +693,16 @@ class Invoice extends Component {
                                             name="form-field-name"
                                             id={'receiver_region'}
                                             styles={customStyles}
-                                            placeholder={'Область'}
+                                            required
+                                            placeholder={'Область *'}
                                             value={data && data.filter(q => q.title === this.state.receiver_region).map(item => ({
-                                                value: item.id,
+                                                value: item.title,
                                                 label: item.title
                                             }))[0]}
                                             isSearchable={true}
                                             onChange={(selectedOption) => this.setState({receiver_region: selectedOption.value})}
                                             options={data && data.map(item => ({
-                                                value: item.id,
+                                                value: item.title,
                                                 label: item.title
                                             }))}
                                         />
@@ -777,8 +724,10 @@ class Invoice extends Component {
                                         <FormGroup>
                                             <InputMask mask="+\9\98(99)-999-99-99"
                                                        value={this.state.receiver_phone}
-                                                       placeholder={'Телефон'}
+                                                       placeholder={'Телефон *'}
+                                                       required
                                                        id={'receiver_phone'}
+                                                       onBlur={(event) => this.onBlurText(event)}
                                                        className={'form-control'}
                                                        onChange={(e) => this.setState({receiver_phone: e.target.value})}
                                             />
@@ -817,8 +766,8 @@ class Invoice extends Component {
                                         <p>Отправить <b>СМС</b> получателью</p>
                                         <label className="container-checkbox">
                                             <input
-                                                checked={this.state.boolfield}
-                                                onChange={() => this.setState({boolfield: !this.state.boolfield})}
+                                                checked={this.state.send_message}
+                                                onChange={() => this.setState({send_message: !this.state.send_message})}
                                                 type="checkbox"/>
                                             <span className="checkmark"/>
                                         </label>
@@ -828,7 +777,7 @@ class Invoice extends Component {
                             {/****** 3   Описание  груза  ******/}
                             <Col xs={12} md={12} className={'form-padding '}>
                                 <Col className={'header-form table-volume-container'}>
-                                    <p>3 Описание груза</p>
+                                    <p>3. Описание груза</p>
                                     <button
                                         type={'button'}
                                         onClick={() => this.setState({showSettings: !this.state.showSettings})}
@@ -848,12 +797,11 @@ class Invoice extends Component {
                                 </Col>
                             </Col>
                             <Col xs={12} md={12} className={'form-padding table-container'}>
-                                <TableList finalSum={() => this.finalSumm()} products={this.state.package_list}/>
+                                <TableList products={this.state.package_list}/>
 
                                 <Col xs={12} md={6} className={'date-time-container'}>
                                     <Col md={8} xs={8} className={'date-container'}>
                                         <ControlLabel>Дата</ControlLabel>
-
                                         <FormGroup>
                                             <FormControl
                                                 id={'date'}
@@ -911,7 +859,7 @@ class Invoice extends Component {
                             <Col xs={12} md={6} className={'form-padding '}>
                                 <Col xs={12} md={12} className={'header-form form-padding'}>
                                     <p>
-                                        4 Вид сервиса
+                                        4. Вид сервиса
                                     </p>
                                 </Col>
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
@@ -922,8 +870,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_picked'}
-                                                   checked={this.state.to_be_picked}
-                                                   onChange={e => this.setState({to_be_picked: !this.state.to_be_picked})}
+                                                   checked={this.state.to_be_taken_from_inside_city}
+                                                   onChange={e => this.setState({to_be_taken_from_inside_city: !this.state.to_be_taken_from_inside_city})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -935,8 +883,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_picked'}
-                                                   checked={this.state.to_be_picked}
-                                                   onChange={e => this.setState({to_be_picked: !this.state.to_be_picked})}
+                                                   checked={this.state.to_be_taken_from_outside_city}
+                                                   onChange={e => this.setState({to_be_taken_from_outside_city: !this.state.to_be_taken_from_outside_city})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -946,8 +894,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_delivered'}
-                                                   checked={this.state.to_be_delivered}
-                                                   onChange={e => this.setState({to_be_delivered: !this.state.to_be_delivered})}
+                                                   checked={this.state.to_be_delivered_to_inside_city}
+                                                   onChange={e => this.setState({to_be_delivered_to_inside_city: !this.state.to_be_delivered_to_inside_city})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -957,8 +905,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_delivered'}
-                                                   checked={this.state.to_be_region}
-                                                   onChange={e => this.setState({to_be_region: !this.state.to_be_region})}
+                                                   checked={this.state.to_be_delivered_to_outside_city}
+                                                   onChange={e => this.setState({to_be_delivered_to_outside_city: !this.state.to_be_delivered_to_outside_city})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -968,8 +916,8 @@ class Invoice extends Component {
                                         <label className="container-checkbox">
                                             <input type={'checkbox'}
                                                    id={'to_be_delivered'}
-                                                   checked={this.state.transfer}
-                                                   onChange={e => this.setState({transfer: !this.state.transfer})}
+                                                   checked={this.state.transit}
+                                                   onChange={e => this.setState({transit: !this.state.transit})}
                                             />
                                             <span className="checkmark"/>
                                         </label>
@@ -991,7 +939,7 @@ class Invoice extends Component {
                             <Col xs={12} md={6} className={'form-padding '}>
                                 <Col xs={12} md={12} className={'header-form form-padding'}>
                                     <p>
-                                        4 Вид оплаты
+                                        5. Вид оплаты
                                     </p>
                                 </Col>
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
@@ -1135,7 +1083,7 @@ class Invoice extends Component {
                             </Col>
                             <Clearfix/>
                             <Col xs={12} md={12} className={'form-padding '}>
-                                <Col className={'header-form'}><p>6 Сумма к оплате</p></Col>
+                                <Col className={'header-form'}><p>6. Сумма к оплате</p></Col>
                             </Col>
                             <Col xs={12} md={6} className={'form-padding tarif'}>
                                 <Col md={12} xs={12} className={' tarif-fsm-container'}>
@@ -1146,20 +1094,20 @@ class Invoice extends Component {
                                         Рассчитать
                                     </Button>
                                 </Col>
-                                    <Col md={6} xs={6} className={'print-conatiner'}>
-                                        <ReactToPrint
-                                            trigger={() => <Button>Распечатать</Button>}
-                                            content={() => this.componentRef}
-                                        />
-                                    </Col>
-                                    <Col md={6} xs={6} className={'print-conatiner'}>
-                                        <ReactToPrint
-                                            trigger={() => <Button>Распечатать нак.</Button>}
-                                            content={() => this.componentRef1}
-                                        />
-                                    </Col>
+                                <Col md={6} xs={6} className={'print-conatiner'}>
+                                    <ReactToPrint
+                                        trigger={() => <Button>Распечатать</Button>}
+                                        content={() => this.componentRef}
+                                    />
+                                </Col>
+                                <Col md={6} xs={6} className={'print-conatiner'}>
+                                    <ReactToPrint
+                                        trigger={() => <Button>Распечатать нак.</Button>}
+                                        content={() => this.componentRef1}
+                                    />
+                                </Col>
                                 <Col md={12} xs={12} className={'oformit-container'}>
-                                    <Button type={'submit'}>
+                                    <Button type={'submit'} onClick={this.validate}>>
                                         Оформить
                                     </Button>
                                     <div style={{
@@ -1177,11 +1125,11 @@ class Invoice extends Component {
                                             delivery={to_be_delivered}
                                             quantity={totalQuantity(products)}
                                             weight={finalWeight(products)}
-                                            sum={final_sum}
+                                            sum={this.props.summary && this.props.summary.discount}
                                             ref={el => (this.componentRef = el)}/>
                                     </div>
                                     <div style={{display: 'none'}}>
-                                        <PrintInvoice ref={el => (this.componentRef1 = el)} />
+                                        <PrintInvoice ref={el => (this.componentRef1 = el)}/>
                                     </div>
                                 </Col>
                             </Col>
@@ -1192,7 +1140,9 @@ class Invoice extends Component {
                                     </p>
                                 </Col>
                                 <Col className={'total-number'}>
-                                    <p><b>{this.props.summary&&this.props.summary.discount ? this.props.summary.discount.toFixed(2) : (final_sum?final_sum: '0')} сум</b></p>
+                                    <p>
+                                        <b>{this.props.summary && this.props.summary.discount ? this.props.summary.discount.toFixed(2) : '0'} сум</b>
+                                    </p>
                                 </Col>
                             </Col>
                         </Col>
@@ -1210,8 +1160,6 @@ Invoice = reduxForm({
 
 const mapStateToProps = (state, ownPops) => {
 
-    const selector = formValueSelector('getOrderProduct')
-
     return {
         data: state.orderProduct.regions,
         processing: state.orderProduct.processing,
@@ -1220,7 +1168,6 @@ const mapStateToProps = (state, ownPops) => {
         delivery: state.orderProduct.delivery,
         boxList: state.orderProduct.boxList,
         tarifList: state.orderProduct.tarifList,
-        methodList: state.orderProduct.methodList,
         searchProcessing: state.searchText.processing,
         settings: state.orderProduct.settings,
         summary: state.orderProduct.summary,

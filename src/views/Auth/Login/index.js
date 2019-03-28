@@ -19,11 +19,10 @@ class Login extends Component {
 
 
     renderInputField(field) {
-
         return (
             <FormGroup>
                 <ControlLabel>{field.label}</ControlLabel>
-                {field.error && <ErrorMessage error={field.error}/>}
+                {field.error && <ErrorMessage  error={field.error}/>}
                 <FormControl
                     placeholder={field.placeholder}
                     type={field.type}
@@ -39,26 +38,32 @@ class Login extends Component {
         const {handleSubmit, dispatch, reset, history} = this.props
         return handleSubmit((values) => {
             const {username, password} = values
-
-            Routines.admin.signinUser({
-                request: {
-                    username,
-                    password
-                }
-            }, dispatch)
-                .then((res) => {
-                    reset()
-                    history.go('/')
-                }).catch(err => {
-                this.setState({
-                    error: err.errors
+            if (username && password) {
+                Routines.admin.signinUser({
+                    request: {
+                        username,
+                        password
+                    }
+                }, dispatch)
+                    .then((res) => {
+                        reset()
+                        history.go('/')
+                    }).catch(err => {
+                    this.setState({error: err.errors.non_field_errors[0]})
                 })
-            })
-            if (this.state.error)
-                throw new SubmissionError({error: this.state.error})
+            } else {
+                this.setState({error: 'Fill all fields!'})
+            }
         })()
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.products !== nextProps.products) {
+            setTimeout(() => {
+                this.setState({error: ''})
+            }, 1000)
+        }
+    }
 
     render() {
         const {processing} = this.props
@@ -90,10 +95,7 @@ class Login extends Component {
                                             component={this.renderInputField}
 
                                         />
-
-
                                     </div>
-
                                     <div className="form-group">
                                         <Field
                                             label={'Пароль'}
@@ -101,12 +103,8 @@ class Login extends Component {
                                             type={'password'}
                                             placeholder={'Пароль'}
                                             component={this.renderInputField}
-
                                         />
-
-
                                     </div>
-
                                     <button type="submit"
                                             className="btn btn-primary">
                                         Вход
@@ -115,19 +113,18 @@ class Login extends Component {
                                     <div className="forgot">
                                         <Link to={'/forgot_password'}>Забыли пароль</Link>
                                     </div>
-
                                     {/*<div className={'registration'}>*/}
-                                        {/*<hr width="100px"/>*/}
-                                        {/*<span>Нет профиля?</span>*/}
-                                        {/*<hr width="100px"/>*/}
+                                    {/*<hr width="100px"/>*/}
+                                    {/*<span>Нет профиля?</span>*/}
+                                    {/*<hr width="100px"/>*/}
                                     {/*</div>*/}
                                     {/*<div className={'btn-reg-container'}>*/}
-                                        {/*<button type={'button'} onClick={() => {*/}
+                                    {/*<button type={'button'} onClick={() => {*/}
 
-                                            {/*this.props.navigateReg()*/}
-                                        {/*}}>*/}
-                                            {/*Регистрация*/}
-                                        {/*</button>*/}
+                                    {/*this.props.navigateReg()*/}
+                                    {/*}}>*/}
+                                    {/*Регистрация*/}
+                                    {/*</button>*/}
                                     {/*</div>*/}
                                 </form>
                             </div>

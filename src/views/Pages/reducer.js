@@ -70,7 +70,6 @@ const initialState = {
         }
     ],
     tarifList: [],
-    methodList: [],
     delivery: null,
     boxList: [],
     processing: false,
@@ -106,7 +105,7 @@ export default (state = initialState, action) => {
         case  Routines.admin.getRegions.SUCCESS:
             return {
                 ...state,
-                regions: action.payload.response.results
+                regions: action.payload.response
             }
         case Routines.admin.createInvoice.SUCCESS:
         case Routines.admin.scanList.SUCCESS:
@@ -251,12 +250,7 @@ export default (state = initialState, action) => {
         case Routines.admin.tarifList.SUCCESS:
             return {
                 ...state,
-                tarifList: action.payload.response.results
-            }
-        case Routines.admin.methodList.SUCCESS:
-            return {
-                ...state,
-                methodList: action.payload.response.results
+                tarifList: action.payload.response
             }
         case Routines.admin.createDelivery.SUCCESS:
             return {
@@ -266,7 +260,7 @@ export default (state = initialState, action) => {
         case Routines.admin.boxList.SUCCESS:
             return {
                 ...state,
-                boxList: action.payload.response.results
+                boxList: action.payload.response
             }
         case 'SET_SETTINGS':
             return {
