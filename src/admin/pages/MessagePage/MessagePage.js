@@ -7,27 +7,37 @@ import {
     Modal,
     OverlayTrigger,
     Table,
-    Tooltip
+    Tooltip,
+    MenuItem,
+    DropdownButton
 } from "react-bootstrap";
 import axios from "axios";
 import MDSpinner from "react-md-spinner";
 import {withRouter} from "react-router-dom";
 import {connect} from "react-redux";
-import LoadingOverlay from 'react-loading-overlay';
+import InputMask from 'react-input-mask';
+
 
 import {TOKEN, URL} from '../../common/config/url';
-import {addUserList, getUserList} from "../../common/actions/EmployeeActions";
 import Card from "../../components/Card/Card";
+import {addMessageList, getMessageList} from "../../common/actions/MessageActions";
+import {getRegionList} from "../../common/actions/RegionActions";
 
-class EmployeePage extends Component {
+class MessagePage extends Component {
     state = {
-        employeeList: [],
-        loadingData: false,
+        regionList: [],
         show: false,
-        username: "",
-        first_name: "",
-        last_name: "",
-        password: "",
+        regionText: "",
+        region: "",
+        text: "",
+        phone: "",
+
+        editingRegion: "",
+        editingRegionText: "",
+        editingText: "",
+        editingPhone: "",
+        editingMessageID: "",
+
         showSpinner: false,
         page: 2,
         hasMore: false,
@@ -36,38 +46,34 @@ class EmployeePage extends Component {
         toggleActive: false,
         showStatusModal: false,
         staffToggle: true,
-        editingUserStatus: "",
-        editingUserID: "",
         loadingSaveEdit: false,
-        isLoadingActive: true
+        loadingData: false
     };
 
     _isMounted = false;
-
 
     componentDidMount() {
         this._isMounted = true;
         this.setState({error: false})
         this.setState({loadingItems: false});
         this.setState({loadingSaveEdit: false});
-        this.setState({loadingData: true})
+        this.setState({loadingData: true});
+        this.getRegionList();
 
         if (this._isMounted) {
-            axios.get(`${URL}/api/user/list`,
+            axios.get(`${URL}/api/feedback/message/list`,
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
-                        console.log("USER LIST ==> ", response.data)
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         } else if (response.data.next === null) {
                             this.setState({hasMore: false})
                         }
                         this.setState({loadingData: false})
-                        this.setState({employeeList: response.data});
-                        this.setState({isLoadingActive: false});
+                        this.setState({regionList: response.data.results});
                         console.log("response.data", response.data);
-                        this.props.getUserList(response.data);
+                        this.props.getMessageList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -76,18 +82,38 @@ class EmployeePage extends Component {
         }
     }
 
-    getUserList = () => {
+    getBoxList = () => {
         if (this._isMounted) {
-            axios.get(`${URL}/api/user/list`,
+            axios.get(`${URL}/api/feedback/message/list`,
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         }
-                        this.setState({employeeList: response.data});
+                        this.setState({regionList: response.data.results});
                         console.log("response.data", response.data)
-                        this.props.getUserList(response.data);
+                        this.props.getMessageList(response.data);
+                    }
+                })
+                .catch((error) => {
+                    console.log('Error: => ' + error);
+                });
+        }
+    };
+
+    getRegionList = () => {
+        if (this._isMounted) {
+            axios.get(`${URL}/api/region/list`,
+                { headers: { Authorization: `Token ${TOKEN}` } })
+                .then(response => {
+                    if (this._isMounted) {
+                        if (response.data.next !== null) {
+                            this.setState({hasMore: true})
+                        }
+                        this.setState({regionList: response.data});
+                        console.log("response.data", response.data)
+                        this.props.getRegionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -102,7 +128,7 @@ class EmployeePage extends Component {
 
         this.setState({loadingItems: true});
 
-        axios.get(`${URL}/api/user/list?page=${page}`,
+        axios.get(`${URL}/api/feedback/message/list?page=${page}`,
             {headers: {Authorization: `Token ${TOKEN}`}})
             .then(response => {
                 if (response.data.next === null) {
@@ -111,7 +137,7 @@ class EmployeePage extends Component {
                 console.log("response.data ==> page => ", page , response.data);
                 this.setState({page: this.state.page + 1});
                 this.setState({loadingItems: false});
-                this.props.addUserList(response.data)
+                this.props.addBoxList(response.data.results)
             })
             .catch((error) => {
                 this.setState({loadingItems: false});
@@ -124,16 +150,15 @@ class EmployeePage extends Component {
         this._isMounted = false;
         this.setState({showSpinner: false});
         this.setState({error: false});
-        this.props.getUserList();
+        this.props.getMessageList()
     }
 
     handleClose = () => {
         this.setState({ show: false });
         this.setState({
-            username: "",
-            first_name: "",
-            last_name: "",
-            password: "",
+            region: "",
+            text: "",
+            phone: ""
         })
         this.setState({error: false})
     };
@@ -147,23 +172,21 @@ class EmployeePage extends Component {
         this.setState({showSpinner: true});
         console.log("state ", this.state );
 
-        axios.post(`${URL}/api/user/register`, {
-            username: this.state.username,
-            first_name: this.state.first_name,
-            last_name: this.state.last_name,
-            password: this.state.password
+        axios.post(`${URL}/api/feedback/message/create`, {
+                region: this.state.region,
+                text: this.state.text,
+                phone: this.state.phone
             },
             { headers: { Authorization: `Token ${TOKEN}` }})
             .then((response) => {
                 this.setState({showSpinner: false})
                 this.setState({show: false})
                 this.setState({
-                    username: "",
-                    first_name: "",
-                    last_name: "",
-                    password: "",
-                })
-                this.getUserList()
+                    region: "",
+                    text: "",
+                    phone: ""
+                });
+                this.getBoxList();
                 console.log("response.data", response.data)})
             .catch((error) => {
                 this.setState({error: true})
@@ -176,19 +199,18 @@ class EmployeePage extends Component {
         this.setState({ toggleActive: !this.state.toggleActive });
     };
 
-    deleteUser = (userID) => {
-        console.log("userID ", userID)
+    deleteBox = (boxID) => {
+        console.log("regionID ", boxID)
 
-        axios.delete(`${URL}/api/user/delete/${userID}`,
+        axios.delete(`${URL}/api/feedback/message/delete/${boxID}`,
             {
                 headers: { Authorization: `Token ${TOKEN}` }
             })
             .then((response) => {
-                this.getUserList()
+                this.getBoxList()
                 this.setState({});
                 console.log("response", response)})
             .catch((error) => {
-
                 console.log(error.response);
             });
     };
@@ -197,27 +219,28 @@ class EmployeePage extends Component {
         this.setState({showStatusModal: false})
     };
 
-    editUserInfo = (isStaff, id) => {
-        this.setState({editingUserID: id});
-        this.setState({editingUserStatus: isStaff});
-      console.log(isStaff);
-      this.setState({showStatusModal: true})
-    };
-
-    handleInputChange = (event) => {
-        const target = event.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+    editBoxInfo = (box, id) => {
 
         this.setState({
-            editingUserStatus: value
+            editingRegionText: box.region.title,
+            editingRegion: box.region.id,
+            editingText: box.text,
+            editingPhone: box.phone,
+            editingMessageID: id,
+            showStatusModal: true
         });
+
+        console.log(box);
+
     };
 
     saveStatus = () => {
         this.setState({loadingSaveEdit: true});
 
-        axios.put(`${URL}/api/user/update/access/${this.state.editingUserID}`, {
-            is_staff: this.state.editingUserStatus
+        axios.put(`${URL}/api/feedback/message/update/${this.state.editingMessageID}`, {
+                region: this.state.editingRegion,
+                text: this.state.editingText,
+                phone: this.state.editingPhone
             }
             , {
                 headers: { Authorization: `Token ${TOKEN}` }
@@ -226,7 +249,7 @@ class EmployeePage extends Component {
                 console.log("res ", res);
                 this.setState({loadingSaveEdit: false})
                 this.setState({showStatusModal: false})
-                this.getUserList()
+                this.getBoxList()
             })
             .catch((error) => {
                 this.setState({loadingSaveEdit: false})
@@ -235,13 +258,11 @@ class EmployeePage extends Component {
     };
 
 
-
-
     render() {
         return (
             <div style={{padding: "25px"}}>
                 <div>
-                    <h2>Пользователи</h2>
+                    <h2>Сообщение</h2>
                 </div>
                 <Button
                     variant="primary"
@@ -258,48 +279,26 @@ class EmployeePage extends Component {
                             <thead className="employee-table">
                             <tr>
                                 <th style={{color: "#000"}} >ID</th>
-                                <th style={{color: "#000"}} >Имя</th>
-                                <th style={{color: "#000"}} >Фамилия</th>
-                                <th style={{color: "#000"}} >Имя пользователя</th>
-                                <th style={{color: "#000"}} >Доступ</th>
-                                <th></th>
+                                <th style={{color: "#000"}} >Регион</th>
+                                <th style={{color: "#000"}} >Текст</th>
+                                <th style={{color: "#000"}} >Номер телефона</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {this.props.userList && this.props.userList.map((user, id) => {
+                            {this.props.messageList && this.props.messageList.map((box, id) => {
                                 return (
                                     <tr key={id}>
-                                        <td>{user.id}</td>
-                                        <td>{user.first_name}</td>
-                                        <td>{user.last_name}</td>
-                                        <td>{user.username}</td>
-                                        <td>{user.is_staff ?
-                                            <div
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                    borderRadius: "20px",
-                                                    backgroundColor: "green",
-                                                    margin: "auto"
-                                                }}
-                                            /> :
-                                            <div
-                                                style={{
-                                                    width: "20px",
-                                                    height: "20px",
-                                                    borderRadius: "20px",
-                                                    backgroundColor: "red",
-                                                    margin: "auto"
-                                                }}
-                                            />
-                                        }</td>
+                                        <td>{box.id}</td>
+                                        <td>{box.region.title}</td>
+                                        <td>{box.text}</td>
+                                        <td>{box.phone}</td>
                                         <td className="td-actions"
                                             style={{textAlign: "center", maxWidth: "45px", minWidth: "40px"}}>
                                             <OverlayTrigger placement="top" overlay={<Tooltip
                                                 id="edit_tooltip">Редактировать</Tooltip>}>
                                                 <Button
                                                     onClick={() => {
-                                                        this.editUserInfo(user.is_staff, user.id)
+                                                        this.editBoxInfo(box, box.id)
                                                     }}
                                                     bsStyle="info" bsSize="xs">
                                                     <i className="fa fa-edit"/>
@@ -310,7 +309,7 @@ class EmployeePage extends Component {
                                                 placement="top"
                                                 overlay={<Tooltip id="remove_tooltip">Удалить</Tooltip>}>
                                                 <Button
-                                                    onClick={() => this.deleteUser(user.id)}
+                                                    onClick={() => this.deleteBox(box.id)}
                                                     bsStyle="danger"
                                                     bsSize="xs">
                                                     <i className="fa fa-times"/>
@@ -325,69 +324,74 @@ class EmployeePage extends Component {
                     }
                 </Card>
                 {this.state.hasMore ?  (this.state.loadingItems ?
-                    <Button
-                        variant="primary"
-                        style={{marginTop: "15px"}}
-                    ><MDSpinner size="17"/></Button>
-                    :
-                    <Button
-                        variant="primary"
-                        style={{marginTop: "15px"}}
-                        onClick={() => this.loadMoreItems()}
-                    >Показать больше</Button>
+                        <Button
+                            variant="primary"
+                            style={{marginTop: "15px"}}
+                        ><MDSpinner size="17"/></Button>
+                        :
+                        <Button
+                            variant="primary"
+                            style={{marginTop: "15px"}}
+                            onClick={() => this.loadMoreItems()}
+                        >Показать больше</Button>
                 ) : null}
 
                 <Modal show={this.state.show} onHide={() => this.handleClose()}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Регистрация пользователя</Modal.Title>
+                        <Modal.Title>Добавление сообщения</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+                        <DropdownButton
+                            title={this.state.regionText || "Выбрать"}
+                            variant="primary"
+                            id="dropdown-variants-region"
+                            key="city-from"
+                        >
+                            {this.props.regionList && this.props.regionList.map((red, id) => {
+                                return (
+                                    <MenuItem
+                                        key={id}
+                                        onClick={() => {
+                                            this.setState({
+                                                regionText: red.title,
+                                                region: red.id
+                                            });
+                                            console.log("here ", red)
+                                        }}
+                                    >
+                                        {red.title}
+                                    </MenuItem>
+                                )
+                            })}
+                        </DropdownButton>
                         <FormGroup>
-                            <ControlLabel>Имя пользователя</ControlLabel>
-                            <FormControl
-                                value={this.state.username}
-                                onChange={(e)=>this.setState({username: e.target.value})}
-                                label="Имя пользователя"
-                                type="text"
-                                bsClass="form-control"
-                                placeholder="Имя пользователя"
+                            <ControlLabel>Номер Телефона</ControlLabel>
+                            <InputMask mask="+\9\9\8 (99) 999-99-99"
+                                       value={this.state.phone}
+                                       onChange={(e)=>this.setState({phone: e.target.value})}
+                                       label="Номер Телефона"
+                                       type="text"
+                                       bsClass="form-control"
+                                       placeholder="Номер Телефона"
                             />
-                            <ControlLabel>Имя</ControlLabel>
+                            <ControlLabel>Текст</ControlLabel>
                             <FormControl
-                                value={this.state.first_name}
-                                onChange={(e)=>this.setState({first_name: e.target.value})}
-                                label="Имя"
+                                value={this.state.text}
+                                onChange={(e)=>this.setState({text: e.target.value})}
+                                label="Текст"
                                 type="text"
                                 bsClass="form-control"
-                                placeholder="Имя"
-                            />
-                            <ControlLabel>Фамилия</ControlLabel>
-                            <FormControl
-                                value={this.state.last_name}
-                                onChange={(e)=>this.setState({last_name: e.target.value})}
-                                label="Фамилия"
-                                type="text"
-                                bsClass="form-control"
-                                placeholder="Фамилия"
-                            />
-                            <ControlLabel>Пароль</ControlLabel>
-                            <FormControl
-                                value={this.state.password}
-                                onChange={(e)=>this.setState({password: e.target.value})}
-                                label="Пароль"
-                                type="text"
-                                bsClass="form-control"
-                                placeholder="Пароль"
+                                placeholder="Текст"
                             />
                         </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>
                         {this.state.error ?
                             <div style={{float: "left"}}>
-                                <span style={{color: "red"}}>Ошибка при регистрации</span>
+                                <span style={{color: "red"}}>Ошибка</span>
                             </div>
-                        :
-                        null}
+                            :
+                            null}
                         <Button variant="secondary" onClick={() => this.handleClose()}>
                             Закрыть
                         </Button>
@@ -397,7 +401,7 @@ class EmployeePage extends Component {
                             </Button>
                             :
                             <Button variant="primary" onClick={() => this.confirm()}>
-                                Регистрация
+                                Добавить
                             </Button>
                         }
                     </Modal.Footer>
@@ -407,15 +411,49 @@ class EmployeePage extends Component {
                         <Modal.Title>Редактировать</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <div className="form-check">
-                            <input
-                                style={{float: "left", marginRight: "5px"}}
-                                name="isGoing"
-                                type="checkbox"
-                                checked={this.state.editingUserStatus}
-                                onChange={(e)=>this.handleInputChange(e)} />
-                                <label className="form-check-label" htmlFor="exampleCheck1">Права администратора</label>
-                        </div>
+                        <DropdownButton
+                            title={this.state.editingRegionText || "Выбрать"}
+                            variant="primary"
+                            id="dropdown-variants-region"
+                            key="city-from"
+                        >
+                            {this.props.regionList && this.props.regionList.map((red, id) => {
+                                return (
+                                    <MenuItem
+                                        key={id}
+                                        onClick={() => {
+                                            this.setState({
+                                                editingRegionText: red.title,
+                                                editingRegion: red.id
+                                            });
+                                            console.log("here ", red)
+                                        }}
+                                    >
+                                        {red.title}
+                                    </MenuItem>
+                                )
+                            })}
+                        </DropdownButton>
+                        <FormGroup>
+                            <ControlLabel>Номер Телефона</ControlLabel>
+                            <InputMask mask="+\9\9\8 (99) 999-99-99"
+                                       value={this.state.editingPhone}
+                                       onChange={(e)=>this.setState({editingPhone: e.target.value})}
+                                       label="Номер Телефона"
+                                       type="text"
+                                       bsClass="form-control"
+                                       placeholder="Номер Телефона"
+                            />
+                            <ControlLabel>Текст</ControlLabel>
+                            <FormControl
+                                value={this.state.editingText}
+                                onChange={(e)=>this.setState({editingText: e.target.value})}
+                                label="Текст"
+                                type="text"
+                                bsClass="form-control"
+                                placeholder="Текст"
+                            />
+                        </FormGroup>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={this.closeStatusModal}>
@@ -433,6 +471,7 @@ class EmployeePage extends Component {
                     </Modal.Footer>
                 </Modal>
             </div>
+
         );
     }
 }
@@ -440,10 +479,12 @@ class EmployeePage extends Component {
 
 export default withRouter(connect(
     (state) => ({
-        userList: state.employee.userList,
+        messageList: state.message.messageList,
+        regionList: state.region.regionList
     }),
     (dispatch) => ({
-        getUserList: (users) => dispatch(getUserList(users)),
-        addUserList: (users) => dispatch(addUserList(users))
+        getMessageList: (boxes) => dispatch(getMessageList(boxes)),
+        addMessageList: (boxes) => dispatch(addMessageList(boxes)),
+        getRegionList: (regions) => dispatch(getRegionList(regions))
     })
-)(EmployeePage));
+)(MessagePage));

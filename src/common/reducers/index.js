@@ -17,6 +17,8 @@ import TariffReducer from "../../admin/common/reducers/TariffReducer";
 import MethodReducer from "../../admin/common/reducers/MethodReducer";
 import ServiceReducer from "../../admin/common/reducers/ServiceReducer";
 import FeedbackReducer from "../../admin/common/reducers/FeedbackReducer";
+import AdditionReducer from "../../admin/common/reducers/AdditionReducer";
+import MessageReducer from "../../admin/common/reducers/MessageReducer";
 
 
 export default combineReducers({
@@ -37,5 +39,7 @@ export default combineReducers({
     tariff: TariffReducer,
     method: MethodReducer,
     service: ServiceReducer,
-    feedback: FeedbackReducer
+    feedback: FeedbackReducer,
+    addition: AdditionReducer,
+    message: MessageReducer
 });

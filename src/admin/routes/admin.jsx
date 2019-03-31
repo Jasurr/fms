@@ -7,6 +7,8 @@ import PackagePage from "../pages/PackagePage/PackagePage";
 import MethodPage from "../pages/MethodPage/MethodPage";
 import ServicePage from "../pages/ServicePage/ServicePage";
 import FeedbackPage from "../pages/FeedbackPage/FeedbackPage";
+import AdditionPage from "../pages/AdditionPage/AdditionPage";
+import MessagePage from "../pages/MessagePage/MessagePage";
 
 
 const adminDashboardRoutes = [
@@ -34,36 +36,47 @@ const adminDashboardRoutes = [
         icon: "icon_home.png",
         component: TariffPage,
     },
-    {
-        path: '/admin/invoice',
-        name: 'Накладная',
-        icon: "icon_home.png",
-        component: InvoicePage,
-    },
+    // {
+    //     path: '/admin/invoice',
+    //     name: 'Накладная',
+    //     icon: "icon_home.png",
+    //     component: InvoicePage,
+    // },
     {
         path: '/admin/package',
         name: 'Упаковка',
         icon: "icon_home.png",
         component: PackagePage,
     },
+    // {
+    //     path: '/admin/method',
+    //     name: 'Метод',
+    //     icon: "icon_home.png",
+    //     component: MethodPage,
+    // },
+    // {
+    //     path: '/admin/delivery',
+    //     name: 'Доставка',
+    //     icon: "icon_home.png",
+    //     component: ServicePage,
+    // },
+    // {
+    //     path: '/admin/feedback',
+    //     name: 'Отзывы',
+    //     icon: "icon_home.png",
+    //     component: FeedbackPage,
+    // },
     {
-        path: '/admin/method',
-        name: 'Метод',
+        path: '/admin/addition',
+        name: 'Addition',
         icon: "icon_home.png",
-        component: MethodPage,
-    },
-    {
-        path: '/admin/delivery',
-        name: 'Доставка',
+        component: AdditionPage,
+    },{
+        path: '/admin/message',
+        name: 'Сообщение',
         icon: "icon_home.png",
-        component: ServicePage,
-    },
-    {
-        path: '/admin/feedback',
-        name: 'Отзывы',
-        icon: "icon_home.png",
-        component: FeedbackPage,
-    },
+        component: MessagePage,
+    }
     // {redirect: true, path: '/', to: '/main', name: 'Накладные'}
 ];
 

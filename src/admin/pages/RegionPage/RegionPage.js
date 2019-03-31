@@ -53,6 +53,7 @@ class RegionPage extends Component {
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
+                        console.log("REGION LIST ==> ", response.data)
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         } else if (response.data.next === null) {
@@ -61,7 +62,7 @@ class RegionPage extends Component {
                         this.setState({loadingData: false})
                         this.setState({regionList: response.data.results});
                         console.log("response.data", response.data);
-                        this.props.getRegionList(response.data.results);
+                        this.props.getRegionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -81,7 +82,7 @@ class RegionPage extends Component {
                         }
                         this.setState({regionList: response.data.results});
                         console.log("response.data", response.data)
-                        this.props.getRegionList(response.data.results);
+                        this.props.getRegionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -216,6 +217,7 @@ class RegionPage extends Component {
 
 
     render() {
+        console.log(this.props.regionList);
         return (
             <div style={{padding: "25px"}}>
                 <div>
@@ -235,10 +237,10 @@ class RegionPage extends Component {
                         <Table striped bordered hover responsive size="lg">
                             <thead className="employee-table">
                             <tr>
-                                <th>№</th>
-                                <th>ID</th>
-                                <th>Название</th>
-                                <th>Короткое название</th>
+                                <th style={{color: "#000"}} >№</th>
+                                <th style={{color: "#000"}} >ID</th>
+                                <th style={{color: "#000"}} >Название</th>
+                                <th style={{color: "#000"}} >Короткое название</th>
                             </tr>
                             </thead>
                             <tbody>

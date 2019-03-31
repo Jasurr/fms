@@ -70,10 +70,10 @@ class PackagePage extends Component {
                         }
                         this.setState({
                             loadingData: false,
-                            regionList: response.data.results
+                            regionList: response.data
                         });
                         console.log("response.data", response.data);
-                        this.props.getPackageList(response.data.results);
+                        this.props.getPackageList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -91,9 +91,9 @@ class PackagePage extends Component {
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         }
-                        this.setState({regionList: response.data.results});
+                        this.setState({regionList: response.data});
                         console.log("response.data", response.data)
-                        this.props.getPackageList(response.data.results);
+                        this.props.getPackageList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -231,13 +231,13 @@ class PackagePage extends Component {
                         <Table striped bordered hover responsive size="lg">
                             <thead className="employee-table">
                             <tr>
-                                <th>ID</th>
-                                <th>Наименование</th>
-                                <th>Длинна</th>
-                                <th>Ширина</th>
-                                <th>Высота</th>
-                                <th>Вес</th>
-                                <th>Количество</th>
+                                <th style={{color: "#000"}} >ID</th>
+                                <th style={{color: "#000"}} >Наименование</th>
+                                <th style={{color: "#000"}} >Длинна</th>
+                                <th style={{color: "#000"}} >Ширина</th>
+                                <th style={{color: "#000"}} >Высота</th>
+                                <th style={{color: "#000"}} >Вес</th>
+                                <th style={{color: "#000"}} >Количество</th>
                             </tr>
                             </thead>
                             <tbody>
