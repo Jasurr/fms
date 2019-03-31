@@ -73,9 +73,9 @@ class TariffPage extends Component {
                             this.setState({hasMore: false})
                         }
                         this.setState({loadingData: false});
-                        this.setState({regionList: response.data.results});
+                        this.setState({regionList: response.data});
                         console.log("response.data", response.data);
-                        this.props.getTariffList(response.data.results);
+                        this.props.getTariffList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -86,7 +86,8 @@ class TariffPage extends Component {
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
-                        this.props.getRegionList(response.data.results);
+                        console.log("REGION LIST ==> ", response.data)
+                        this.props.getRegionList(response.data);
                         this.setState({loadingRegions: false})
                     }
                 })
@@ -105,9 +106,9 @@ class TariffPage extends Component {
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         }
-                        this.setState({regionList: response.data.results});
+                        this.setState({regionList: response.data});
                         console.log("response.data", response.data)
-                        this.props.getTariffList(response.data.results);
+                        this.props.getTariffList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -125,9 +126,9 @@ class TariffPage extends Component {
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         }
-                        this.setState({regionList: response.data.results});
+                        this.setState({regionList: response.data});
                         console.log("response.data", response.data)
-                        this.props.getRegionList(response.data.results);
+                        this.props.getRegionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -151,7 +152,7 @@ class TariffPage extends Component {
                 console.log("response.data ==> page => ", page , response.data);
                 this.setState({page: this.state.page + 1});
                 this.setState({loadingItems: false});
-                this.props.addTariffList(response.data.results)
+                this.props.addTariffList(response.data)
             })
             .catch((error) => {
                 this.setState({loadingItems: false});
@@ -297,10 +298,10 @@ class TariffPage extends Component {
                         <Table striped bordered hover responsive size="lg">
                             <thead className="employee-table">
                             <tr>
-                                <th>ID</th>
-                                <th>Откуда</th>
-                                <th>Куда</th>
-                                <th>Цена (сум)</th>
+                                <th style={{color: "#000"}} >ID</th>
+                                <th style={{color: "#000"}} >Откуда</th>
+                                <th style={{color: "#000"}} >Куда</th>
+                                <th style={{color: "#000"}} >Цена (сум)</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -308,8 +309,11 @@ class TariffPage extends Component {
                                 return (
                                     <tr key={id}>
                                         <td>{tariff.id}</td>
-                                        <td>{tariff.city_from_a.title} ({tariff.city_from_a.short})</td>
-                                        <td>{tariff.city_to_a.title} ({tariff.city_to_a.short})</td>
+                                        <td>
+                                            {this.props.regionList && this.props.regionList.find(reg => reg.id === tariff.city_from_a).title}
+                                            ({this.props.regionList && this.props.regionList.find(reg => reg.id === tariff.city_from_a).short})</td>
+                                        <td>{this.props.regionList && this.props.regionList.find(reg => reg.id === tariff.city_to_a).title}
+                                        ({this.props.regionList && this.props.regionList.find(reg => reg.id === tariff.city_to_a).short})</td>
                                         <td>{tariff.price}</td>
                                         <td className="td-actions"
                                             style={{textAlign: "center", maxWidth: "45px", minWidth: "40px"}}>
@@ -342,18 +346,18 @@ class TariffPage extends Component {
                         </Table>
                     }
                 </Card>
-                {this.state.hasMore ?  (this.state.loadingItems ?
-                        <Button
-                            variant="primary"
-                            style={{marginTop: "15px"}}
-                        ><MDSpinner size="17"/></Button>
-                        :
-                        <Button
-                            variant="primary"
-                            style={{marginTop: "15px"}}
-                            onClick={() => this.loadMoreItems()}
-                        >Показать больше</Button>
-                ) : null}
+                {/*{this.state.hasMore ?  (this.state.loadingItems ?*/}
+                        {/*<Button*/}
+                            {/*variant="primary"*/}
+                            {/*style={{marginTop: "15px"}}*/}
+                        {/*><MDSpinner size="17"/></Button>*/}
+                        {/*:*/}
+                        {/*<Button*/}
+                            {/*variant="primary"*/}
+                            {/*style={{marginTop: "15px"}}*/}
+                            {/*onClick={() => this.loadMoreItems()}*/}
+                        {/*>Показать больше</Button>*/}
+                {/*) : null}*/}
 
                 <Modal show={this.state.show} onHide={() => this.handleClose()}>
                     <Modal.Header closeButton>

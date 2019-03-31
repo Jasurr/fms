@@ -68,7 +68,7 @@ class RegionPage extends Component {
                         this.setState({loadingData: false})
                         this.setState({regionList: response.data.results});
                         console.log("response.data", response.data);
-                        this.props.getBoxList(response.data.results);
+                        this.props.getBoxList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -88,7 +88,7 @@ class RegionPage extends Component {
                         }
                         this.setState({regionList: response.data.results});
                         console.log("response.data", response.data)
-                        this.props.getBoxList(response.data.results);
+                        this.props.getBoxList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -278,11 +278,11 @@ class RegionPage extends Component {
                         :
                         <Table striped bordered hover responsive size="lg">
                             <thead className="employee-table">
-                            <tr>
-                                <th>ID</th>
-                                <th>Номер</th>
-                                <th>Размер</th>
-                                <th>Описание</th>
+                            <tr >
+                                <th style={{color: "#000"}} >ID</th>
+                                <th style={{color: "#000"}} >Номер</th>
+                                <th style={{color: "#000"}} >Размер</th>
+                                <th style={{color: "#000"}} >Описание</th>
                             </tr>
                             </thead>
                             <tbody>

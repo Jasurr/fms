@@ -15,17 +15,25 @@ import {withRouter} from "react-router-dom";
 import {connect} from "react-redux";
 
 import {TOKEN, URL} from '../../common/config/url';
+import {addPackageList, getPackageList} from "../../common/actions/PackageActions";
 import Card from "../../components/Card/Card";
-import {addFeedbackList, getFeedbackList} from "../../common/actions/FeedbackActions";
+import {addAdditionList, getAdditionList} from "../../common/actions/AdditionActions";
 
-class FeedbackPage extends Component {
+class AdditionPage extends Component {
     state = {
+        regionList: [],
         show: false,
-        loadingData: false,
-        editingSubject: "",
-        editingFromCustomer: "",
-        editingMessage: "",
-        editingFeedbackID: "",
+
+        deliverInside: "",
+        deliverOutside: "",
+        takenInside: "",
+        takenOutside: "",
+        editingDeliverInside: "",
+        editingDeliverOutside: "",
+        editingTakenInside: "",
+        editingTakenOutside: "",
+        editingAdditionID: "",
+
         showSpinner: false,
         page: 2,
         hasMore: false,
@@ -34,7 +42,8 @@ class FeedbackPage extends Component {
         toggleActive: false,
         showStatusModal: false,
         staffToggle: true,
-        loadingSaveEdit: false
+        loadingSaveEdit: false,
+        loadingData: false
     };
 
     _isMounted = false;
@@ -43,11 +52,12 @@ class FeedbackPage extends Component {
         this._isMounted = true;
         this.setState({error: false})
         this.setState({loadingItems: false});
-        this.setState({loadingSaveEdit: false});
-        this.setState({loadingData: true})
+        this.setState({loadingSaveEdit: false,
+            loadingData: true
+        });
 
         if (this._isMounted) {
-            axios.get(`${URL}/api/feedback/list`,
+            axios.get(`${URL}/api/invoice/addition/list`,
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
@@ -56,10 +66,12 @@ class FeedbackPage extends Component {
                         } else if (response.data.next === null) {
                             this.setState({hasMore: false})
                         }
-                        this.setState({loadingData: false})
-                        this.setState({regionList: response.data.results});
+                        this.setState({
+                            loadingData: false,
+                            regionList: response.data
+                        });
                         console.log("response.data", response.data);
-                        this.props.getFeedbackList(response.data.results);
+                        this.props.getAdditionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -68,18 +80,18 @@ class FeedbackPage extends Component {
         }
     }
 
-    getFeedbackList = () => {
+    getPackageList = () => {
         if (this._isMounted) {
-            axios.get(`${URL}/api/feedback/list`,
+            axios.get(`${URL}/api/invoice/addition/list`,
                 { headers: { Authorization: `Token ${TOKEN}` } })
                 .then(response => {
                     if (this._isMounted) {
                         if (response.data.next !== null) {
                             this.setState({hasMore: true})
                         }
-                        this.setState({feedbackList: response.data.results});
+                        this.setState({regionList: response.data});
                         console.log("response.data", response.data)
-                        this.props.getFeedbackList(response.data.results);
+                        this.props.getAdditionList(response.data);
                     }
                 })
                 .catch((error) => {
@@ -94,7 +106,7 @@ class FeedbackPage extends Component {
 
         this.setState({loadingItems: true});
 
-        axios.get(`${URL}/api/feedback/list?page=${page}`,
+        axios.get(`${URL}/api/invoice/package/list?page=${page}`,
             {headers: {Authorization: `Token ${TOKEN}`}})
             .then(response => {
                 if (response.data.next === null) {
@@ -103,7 +115,7 @@ class FeedbackPage extends Component {
                 console.log("response.data ==> page => ", page , response.data);
                 this.setState({page: this.state.page + 1});
                 this.setState({loadingItems: false});
-                this.props.addFeedbackList(response.data.results)
+                this.props.addPackageList(response.data.results)
             })
             .catch((error) => {
                 this.setState({loadingItems: false});
@@ -115,9 +127,20 @@ class FeedbackPage extends Component {
     componentWillUnmount() {
         this._isMounted = false;
         this.setState({showSpinner: false});
-        this.setState({error: false})
-        this.props.getFeedbackList();
+        this.setState({error: false});
+        this.props.getAdditionList()
     }
+
+    handleClose = () => {
+        this.setState({ show: false });
+        this.setState({
+            deliverInside: "",
+            deliverOutside: "",
+            takenInside: "",
+            takenOutside: "",
+        });
+        this.setState({error: false})
+    };
 
     handleShow = () => {
         this.setState({ show: true });
@@ -127,46 +150,31 @@ class FeedbackPage extends Component {
         this.setState({ toggleActive: !this.state.toggleActive });
     };
 
-    deleteFeedback = (feedbackID) => {
-        console.log("feedbackID ", feedbackID)
-
-        axios.delete(`${URL}/api/feedback/delete/${feedbackID}`,
-            {
-                headers: { Authorization: `Token ${TOKEN}` }
-            })
-            .then((response) => {
-                this.getFeedbackList()
-                this.setState({});
-                console.log("response", response)})
-            .catch((error) => {
-                console.log(error.response);
-            });
-    };
-
     closeStatusModal = () => {
         this.setState({showStatusModal: false})
     };
 
-    editFeedbackInfo = (feed, id) => {
+    editPackageInfo = (pack, id) => {
         this.setState({
-            editingSubject: feed.subject,
-            editingFromCustomer: feed.from_customer,
-            editingMessage: feed.message,
-            editingFeedbackID: id
+            editingDeliverInside: pack.to_be_delivered_to_inside_city,
+            editingDeliverOutside: pack.to_be_delivered_to_outside_city,
+            editingTakenInside: pack.to_be_taken_from_inside_city,
+            editingTakenOutside: pack.to_be_taken_from_outside_city,
+            editingAdditionID: id
         });
 
-        console.log(feed);
+        console.log(pack);
         this.setState({showStatusModal: true})
     };
 
     saveStatus = () => {
         this.setState({loadingSaveEdit: true});
 
-        axios.put(`${URL}/api/feedback/update/${this.state.editingServiceID}`, {
-                subject: this.state.editingSubject,
-                from_customer: this.state.editingFromCustomer,
-                message: this.state.editingMessage,
-                // reply: this.state.editingQuantity,
+        axios.put(`${URL}/api/invoice/addition/update/${this.state.editingAdditionID}`, {
+                to_be_taken_from_inside_city: this.state.editingTakenInside,
+                to_be_taken_from_outside_city: this.state.editingTakenOutside,
+                to_be_delivered_to_inside_city: this.state.editingDeliverInside,
+                to_be_delivered_to_outside_city: this.state.editingDeliverOutside
             }
             , {
                 headers: { Authorization: `Token ${TOKEN}` }
@@ -175,7 +183,7 @@ class FeedbackPage extends Component {
                 console.log("res ", res);
                 this.setState({loadingSaveEdit: false})
                 this.setState({showStatusModal: false})
-                this.getFeedbackList()
+                this.getPackageList()
             })
             .catch((error) => {
                 this.setState({loadingSaveEdit: false})
@@ -188,7 +196,7 @@ class FeedbackPage extends Component {
         return (
             <div style={{padding: "25px"}}>
                 <div>
-                    <h2>Отзывы</h2>
+                    <h2>Addition</h2>
                 </div>
                 <Card>
                     {this.state.loadingData ?
@@ -198,44 +206,31 @@ class FeedbackPage extends Component {
                         :
                         <Table striped bordered hover responsive size="lg">
                             <thead className="employee-table">
-                            <tr>
-                                <th style={{color: "#000"}} >ID</th>
-                                <th style={{color: "#000"}} >От</th>
-                                <th style={{color: "#000"}} >Тема</th>
-                                <th style={{color: "#000"}} >Сообщение</th>
-                                <th style={{color: "#000"}} >Дата создания</th>
+                            <tr >
+                                <th style={{color: "#000"}}>Вызов курьера (Внутри города)</th>
+                                <th style={{color: "#000"}}>Вызов курьера (Вне города)</th>
+                                <th style={{color: "#000"}}>Доставка (Внутри города)</th>
+                                <th style={{color: "#000"}}>Доставка (Вне города)</th>
                             </tr>
                             </thead>
                             <tbody>
-                            {this.props.feedbackList && this.props.feedbackList.map((feed, id) => {
+                            {this.props.additionList && this.props.additionList.map((pack, id) => {
                                 return (
                                     <tr key={id}>
-                                        <td>{feed.id}</td>
-                                        <td>{feed.from_customer}</td>
-                                        <td>{feed.subject}</td>
-                                        <td>{feed.message}</td>
-                                        <td>{feed.created}</td>
+                                        <td >{pack.to_be_taken_from_inside_city}</td>
+                                        <td>{pack.to_be_taken_from_outside_city}</td>
+                                        <td>{pack.to_be_delivered_to_inside_city}</td>
+                                        <td>{pack.to_be_delivered_to_outside_city}</td>
                                         <td className="td-actions"
                                             style={{textAlign: "center", maxWidth: "45px", minWidth: "40px"}}>
                                             <OverlayTrigger placement="top" overlay={<Tooltip
                                                 id="edit_tooltip">Редактировать</Tooltip>}>
                                                 <Button
                                                     onClick={() => {
-                                                        this.editFeedbackInfo(feed, feed.id)
+                                                        this.editPackageInfo(pack, pack.id)
                                                     }}
                                                     bsStyle="info" bsSize="xs">
                                                     <i className="fa fa-edit"/>
-                                                </Button>
-                                            </OverlayTrigger>
-
-                                            <OverlayTrigger
-                                                placement="top"
-                                                overlay={<Tooltip id="remove_tooltip">Удалить</Tooltip>}>
-                                                <Button
-                                                    onClick={() => this.deleteFeedback(feed.id)}
-                                                    bsStyle="danger"
-                                                    bsSize="xs">
-                                                    <i className="fa fa-times"/>
                                                 </Button>
                                             </OverlayTrigger>
                                         </td>
@@ -246,18 +241,18 @@ class FeedbackPage extends Component {
                         </Table>
                     }
                 </Card>
-                {this.state.hasMore ?  (this.state.loadingItems ?
-                        <Button
-                            variant="primary"
-                            style={{marginTop: "15px"}}
-                        ><MDSpinner size="17"/></Button>
-                        :
-                        <Button
-                            variant="primary"
-                            style={{marginTop: "15px"}}
-                            onClick={() => this.loadMoreItems()}
-                        >Показать больше</Button>
-                ) : null}
+                {/*{this.state.hasMore ?  (this.state.loadingItems ?*/}
+                        {/*<Button*/}
+                            {/*variant="primary"*/}
+                            {/*style={{marginTop: "15px"}}*/}
+                        {/*><MDSpinner size="17"/></Button>*/}
+                        {/*:*/}
+                        {/*<Button*/}
+                            {/*variant="primary"*/}
+                            {/*style={{marginTop: "15px"}}*/}
+                            {/*onClick={() => this.loadMoreItems()}*/}
+                        {/*>Показать больше</Button>*/}
+                {/*) : null}*/}
 
                 <Modal show={this.state.showStatusModal} onHide={this.closeStatusModal}>
                     <Modal.Header closeButton>
@@ -265,32 +260,41 @@ class FeedbackPage extends Component {
                     </Modal.Header>
                     <Modal.Body>
                         <FormGroup>
-                            <ControlLabel>Тема</ControlLabel>
+                            <ControlLabel>Вызов курьера (Внутри города)</ControlLabel>
                             <FormControl
-                                value={this.state.editingSubject}
-                                onChange={(e)=>this.setState({editingSubject: e.target.value})}
-                                label="Тема"
+                                value={this.state.editingTakenInside}
+                                onChange={(e)=>this.setState({editingTakenInside: e.target.value})}
+                                label="Вызов курьера (Внутри города)"
                                 type="text"
                                 bsClass="form-control"
-                                placeholder="Тема"
+                                placeholder="Вызов курьера (Внутри города)"
                             />
-                            <ControlLabel>От:</ControlLabel>
+                            <ControlLabel>Вызов курьера (Вне города)</ControlLabel>
                             <FormControl
-                                value={this.state.editingFromCustomer}
-                                onChange={(e)=>this.setState({editingPassport: e.target.value})}
-                                label="Почта"
+                                value={this.state.editingTakenOutside}
+                                onChange={(e)=>this.setState({editingTakenOutside: e.target.value})}
+                                label="Вызов курьера (Вне города)"
                                 type="text"
                                 bsClass="form-control"
-                                placeholder="Почта"
+                                placeholder="Вызов курьера (Вне города)"
                             />
-                            <ControlLabel>Сообщение</ControlLabel>
+                            <ControlLabel>Доставка (Внутри города)</ControlLabel>
                             <FormControl
-                                value={this.state.editingMessage}
-                                onChange={(e)=>this.setState({editingMessage: e.target.value})}
-                                label="Сообщение"
+                                value={this.state.editingDeliverInside}
+                                onChange={(e)=>this.setState({editingDeliverInside: e.target.value})}
+                                label="Доставка (Внутри города)"
                                 as="textarea" rows="3"
                                 bsClass="form-control"
-                                placeholder="Сообщение"
+                                placeholder="Доставка (Внутри города)"
+                            />
+                            <ControlLabel>Доставка (Внe города)</ControlLabel>
+                            <FormControl
+                                value={this.state.editingDeliverOutside}
+                                onChange={(e)=>this.setState({editingDeliverOutside: e.target.value})}
+                                label="Доставка (Внe города)"
+                                as="textarea" rows="3"
+                                bsClass="form-control"
+                                placeholder="Доставка (Внe города)"
                             />
                         </FormGroup>
                     </Modal.Body>
@@ -318,10 +322,10 @@ class FeedbackPage extends Component {
 
 export default withRouter(connect(
     (state) => ({
-        feedbackList: state.feedback.feedbackList,
+        additionList: state.addition.additionList,
     }),
     (dispatch) => ({
-        getFeedbackList: (feedback) => dispatch(getFeedbackList(feedback)),
-        addFeedbackList: (feedback) => dispatch(addFeedbackList(feedback))
+        getAdditionList: (packages) => dispatch(getAdditionList(packages)),
+        addAdditionList: (packages) => dispatch(addAdditionList(packages))
     })
-)(FeedbackPage));
+)(AdditionPage));
