@@ -5,7 +5,7 @@ import {Routines} from 'common/api';
 import './styles.css'
 import CurrencyInput from 'react-currency-input';
 import {Button, Clearfix, Col, ControlLabel, FormControl, FormGroup, Grid, Modal, Row} from "react-bootstrap";
-import {reduxForm} from 'redux-form'
+import {Field, reduxForm} from 'redux-form'
 import ReactCodeInput from 'react-code-input'
 import TableList from "./TableList/TableList";
 import ReactToPrint from "react-to-print";
@@ -155,44 +155,52 @@ class Invoice extends Component {
         } else {
             to_be_paid = "Receiver"
         }
-        console.log('receiver_region', box)
-        console.log('region', region)
+        let phoneNum = sender_phone.trim(')')
         Routines.admin.createInvoice({
             request: {
-                INN: '121212',
-                region: 2,
-                box: 1,
-                tariff: 1,
+                INN,
+                region: region,
+                box: box,
+                tariff: summary && summary.tariff_id,
 
-                sender_organization: 'AAB1',
-                sender_f_l_m: 'Ilxom2',
+                sender_organization,
+                sender_f_l_m,
                 sender_country,
-                sender_region: 'TASHKENT',
-                sender_city: 'Tashkent',
+                sender_region,
+                sender_city,
                 sender_line,
                 sender_email,
-                sender_phone: '+998(90)-223-12-12',
+                sender_phone,
 
-                receiver_organization: 'AAA',
-                receiver_f_l_m: 'Alisher',
+                receiver_organization,
+                receiver_f_l_m,
                 receiver_country,
-                receiver_region: 'SAMARQAND',
-                receiver_city: 'Samarqand',
+                receiver_region,
+                receiver_city,
                 receiver_email,
-                receiver_phone: '+998(90)-232-23-23',
+                receiver_phone,
                 receiver_post_index,
-                transit: false,
-                send_message: false,
-                to_be_taken_from_inside_city: false,
-                to_be_taken_from_outside_city: false,
-                to_be_delivered_to_inside_city: false,
-                to_be_delivered_to_outside_city: false,
+                transit,
+                send_message,
+                to_be_taken_from_inside_city,
+                to_be_taken_from_outside_city,
+                to_be_delivered_to_inside_city,
+                to_be_delivered_to_outside_city,
                 status: 'New',
-                payment_method: 'Cash',
-                to_be_paid: 'Sender',
+                payment_method,
+                to_be_paid,
                 discount: discount ? discount : 0,
-                package: products,
-                total_price: 2000,
+                package: products.map(item => {
+                    return {
+                        title: item.title,
+                        width: item.width,
+                        height: item.height,
+                        length: item.length,
+                        weight: item.weight,
+                        quantity: item.quantity,
+                    }
+                }),
+                total_price: summary.discount,
                 created_date: date + 'T' + time
             }
         }, dispatch)
@@ -237,7 +245,6 @@ class Invoice extends Component {
             sender_region,
             receiver_region
         } = this.state
-        let kg = !!is_weight
 
         let reg1 = data && data.filter(q => q.title === sender_region).map(item => item.id)[0]
         let reg2 = data && data.filter(q => q.title === receiver_region).map(item => item.id)[0]
@@ -485,7 +492,6 @@ class Invoice extends Component {
 
                                 <Col md={4} xs={12}>
                                     <Col md={12} sm={6} xs={12} className={'form-padding '}>
-
                                         <FormGroup>
                                             <FormControl
                                                 id={'sender_country'}
@@ -944,68 +950,39 @@ class Invoice extends Component {
                                 </Col>
                                 <Col xs={12} md={12} className={'trucking-container form-padding'}>
                                     <Col xs={12} md={12} className={'avia-trucking-container first'}>
-                                        <div className="input-group container-check">
-                                                <span className="input-group-addon">
-                                                <label className="container-checkbox">
-                                                  <input type={'checkbox'}
-                                                         id={'payment_cash'}
-                                                         checked={this.state.payment_cash}
-                                                         onChange={() => this.setState({payment_cash: !this.state.payment_cash})}
-                                                  />
-                                                     <span className="checkmark"/>
-                                                    </label>
-                                                </span>
-                                            <CurrencyInput
-                                                ref="myinput"
-                                                id={'payment_cash'}
-                                                precision=""
-                                                className="form-control"
-                                                readOnly={!this.state.payment_cash}
-                                                placeholder={'Наличие'}
+                                        <p>
+                                            Наличные
+                                        </p>
+                                        <label className="container-checkbox">
+                                            <input type={'checkbox'}
+                                                   disabled={cash_disabled}
+                                                   checked={this.state.payment_cash}
+                                                   onChange={() => this.setState({payment_cash: !this.state.payment_cash})}
                                             />
-                                        </div>
+                                            <span className="checkmark"/>
+                                        </label>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding'}>
-                                        <div className="input-group container-check">
-                                        <span className="input-group-addon">
+                                        <p>Пластиковая карта</p>
                                         <label className="container-checkbox">
-                                          <input type={'checkbox'}
-                                                 id={'payment_card'}
-                                                 checked={this.state.payment_card}
-                                                 onChange={() => this.setState({payment_card: !this.state.payment_card})}
-                                          />
-                                             <span className="checkmark"/>
-                                            </label>
-                                        </span>
-                                            <CurrencyInput
-                                                ref="myinput"
-                                                precision=""
-                                                readOnly={!this.state.payment_card}
-                                                className="form-control"
-                                                placeholder={'Пластиковая карта'}
+                                            <input type={'checkbox'}
+                                                   disabled={card_diabled}
+                                                   checked={this.state.payment_card}
+                                                   onChange={() => this.setState({payment_card: !this.state.payment_card})}
                                             />
-                                        </div>
+                                            <span className="checkmark"/>
+                                        </label>
                                     </Col>
                                     <Col xs={12} md={12} className={'avia-trucking-container form-padding last'}>
-                                        <div className="input-group container-check">
-                                        <span className="input-group-addon">
+                                        <p>Перечислением</p>
                                         <label className="container-checkbox">
-                                          <input type={'checkbox'}
-                                                 id={'payment_transfer'}
-                                                 checked={this.state.payment_transfer}
-                                                 onChange={e => this.setState({payment_transfer: !this.state.payment_transfer})}
-                                          />
-                                             <span className="checkmark"/>
-                                            </label>
-                                        </span>
-                                            <CurrencyInput
-                                                ref="myinput"
-                                                precision=""
-                                                className="form-control"
-                                                readOnly={!this.state.payment_transfer}
-                                                placeholder={'Перечислением'}
+                                            <input type={'checkbox'}
+                                                   onChange={() => this.setState({payment_transfer: !this.state.payment_transfer})}
+                                                   disabled={transfer_disabled}
+                                                   checked={this.state.payment_transfer}
                                             />
-                                        </div>
+                                            <span className="checkmark"/>
+                                        </label>
                                     </Col>
                                     <Col xs={12} md={12}
                                          className={'avia-trucking-container form-padding sale-container'}>
@@ -1107,7 +1084,7 @@ class Invoice extends Component {
                                     />
                                 </Col>
                                 <Col md={12} xs={12} className={'oformit-container'}>
-                                    <Button type={'submit'} onClick={this.validate}>>
+                                    <Button type={'submit'} onClick={this.validate}>
                                         Оформить
                                     </Button>
                                     <div style={{
@@ -1116,8 +1093,8 @@ class Invoice extends Component {
                                         <ComponentToPrint
                                             sender_client={this.state.sender_f_l_m}
                                             receiver_client={this.state.receiver_f_l_m}
-                                            sender_region={this.state.sender_region}
-                                            receiver_region={this.state.receiver_region}
+                                            sender_region={data && data.filter(q => q.title === this.state.sender_region).map(item => item.short)[0]}
+                                            receiver_region={data && data.filter(q => q.title === this.state.receiver_region).map(item => item.short)[0]}
                                             sender_phone={this.state.sender_phone}
                                             receiver_phone={this.state.receiver_phone}
                                             receiver_organization={this.state.receiver_organization}

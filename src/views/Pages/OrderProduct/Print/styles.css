@@ -2,14 +2,38 @@
 .print-table th, .print-table td, .print-table {
   border: 1px solid #000000;
 }
+
 .print-table {
-    width: 100%;
+  position: relative;
+}
+.title-text {
+  text-align: start;
+  font-size: 8px;
+  padding: 0;
+  margin: 0;
+}
+.print-table {
+  width: 100px;
 }
 .print-table th {
   font-size: 12px;
   font-weight: 600;
 }
+
 .print-table td {
   font-size: 14px;
   padding-left: 2px;
+}
+.print-table th p{
+  font-size: 14px;
+  text-transform: uppercase;
+  padding: 0;
+  margin: 0;
+}
+.logo-print {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  float: left;
+  padding: 0 auto;
 }
