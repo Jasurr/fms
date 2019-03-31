@@ -6,9 +6,6 @@ import NotificationSystem from "react-notification-system";
 import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 import moment from "moment";
 import {Button, Modal} from "react-bootstrap";
-import {push} from "connected-react-router";
-import {Link, Redirect, Route, Switch} from "react-router-dom";
-import EditInvoice from "../EditInvoice";
 import {showRow} from "./reducer";
 
 
@@ -103,7 +100,7 @@ class DeliveringProduct extends React.Component {
                                                    dataField='receiver_region'>
                                     Куда
                                 </TableHeaderColumn>
-                                <TableHeaderColumn row={0} rowSpan='2' dataAlign='center' dataSort={true} dataField='final_price'>
+                                <TableHeaderColumn row={0} rowSpan='2' dataAlign='center' dataSort={true} dataField='total_price'>
                                     Сумма
                                 </TableHeaderColumn>
                                 <TableHeaderColumn headerAlign='bottom' thStyle={{'borderBottomWidth': '0',}} row={0}

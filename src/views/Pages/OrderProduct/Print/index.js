@@ -14,61 +14,75 @@ class ComponentToPrint extends React.Component {
             sender_region,
             sender_phone,
             receiver_phone,
-            receiver_organization
+            receiver_organization,
+            quantity
         } = this.props
 
         return (
             <div className={'print-container'}>
-                <table className="table table-bordered" style={{
-                    width: '50%',
-                    height: '50%'
-                }}>
+                <table className="table table-bordered print-table">
                     <thead>
                     <tr>
-                        <th colSpan={2}><h3>BRIF FSM</h3></th>
+                        <th colSpan={2}>
+                            <p><img
+                                src={require('../../../../assets/img/logo/logo.png')}
+                                className={'logo-print'}
+                            />
+                            FLY MAIL SERVIS</p></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Отправитель</td>
-                        <td>Получатель</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            {sender_region && sender_region}<br/>
-                            {sender_client && sender_client}<br/>
-                            {sender_phone && sender_phone}<br/>
-                        </td>
-                        <td>
-                            {receiver_region && receiver_region}<br/>
-                            {receiver_client && receiver_client}<br/>
-                            {receiver_phone && receiver_phone}<br/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colSpan={2}>Фирма: {receiver_organization && receiver_organization}</td>
-                    </tr>
-                    <tr>
-                        <td>Количество: {this.props.quantity && this.props.quantity}</td>
-                        <td>Вес: {this.props.weight && this.props.weight}</td>
-                    </tr>
-                    <tr>
-                        <td colSpan={2}>
-                            Сумма: <b>{this.props.sum && this.props.sum}</b>
-                            <h3>ОПЛАЧЕН</h3>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Доставка: {delivery ? 'есть' : 'нет'}</td>
-                        <td>06/11/2018</td>
-                    </tr>
-                    <tr>
                         <td colSpan={2}>
                             <Barcode
-                                width={1.6}
-                                height={30}
-                                fontSize={14}
+                                width={1}
+                                height={20}
+                                margin={0}
+                                padding={0}
+                                fontSize={8}
                                 value={serial_code ? serial_code : '123456789'}/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colSpan={2} style={{padding: 0, margin: 0}} >
+                            <p className={'title-text'}>Phone number</p>
+                            <p>23483247234234234</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style={{padding: 0, margin: 0}} >
+                            <p className={'title-text'}>DESTINATION:</p>
+                            <p style={{
+                                float: 'right',
+                                padding: 0,
+                                margin: '0 5 5 0'
+                            }}>{receiver_region}</p>
+                        </td>
+                        <td style={{padding: 0, margin: 0}} >
+                            <p className={'title-text'}>QUANTITY:</p>
+                            <p>{quantity} <span style={{textTransform: 'uppercase', fontSize: 10}}>psc</span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style={{padding: 0, margin: 0}} >
+                            <p className={'title-text'}>FROM:</p>
+                            <p style={{
+                                float: 'right',
+                                padding: 0,
+                                margin: '0 5 5 0'
+                            }}>{sender_region}</p>
+                        </td>
+                        <td style={{padding: 0, margin: 0}} >
+                            <p className={'title-text'}>TOTAL WEIGHT:</p>
+                            <p>001 <span style={{textTransform: 'uppercase', fontSize: 10}}>psc</span></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colSpan={2}  style={{padding: 0, margin: 0}}>
+                            <p className={'title-text'}>OPTIONAL INF</p>
+                            <p style={{
+                                fontSize: 12
+                            }}>TASHKENT AIRPORT CARGO</p>
                         </td>
                     </tr>
                     </tbody>

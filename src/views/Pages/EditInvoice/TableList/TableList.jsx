@@ -14,31 +14,6 @@ class TableList extends React.Component {
         this.state.products = this.props.products
     }
 
-    componentDidMount() {
-        const arr = {
-            id: 1,
-            title: '',
-            length: '',
-            width: '',
-            height: '',
-            weight: '',
-            quantity: '',
-            method: {
-                id: 1,
-                for_additional_kg: '5000.00',
-                created: '2018-12-09 08:25:08',
-                updated: '2018-12-09 08:25:08'
-            },
-            total_weight: '',
-        }
-        if (!this.props.products) {
-            this.setState({
-                products: [
-                    arr
-                ]
-            })
-        }
-    }
 
     handleRowDel(product) {
         // var index = this.state.products.indexOf(product);
@@ -79,9 +54,8 @@ class TableList extends React.Component {
         };
         var products = this.state.products.slice();
         var newProducts = products.map(function (product) {
-
             for (var key in product) {
-                if (key == item.name && product.id == item.id) {
+                if (key === item.name && product.id === item.id) {
                     product[key] = item.value;
                 }
             }
@@ -98,7 +72,7 @@ class TableList extends React.Component {
                 <ProductTable onProductTableUpdate={this.handleProductTable.bind(this)}
                               onRowAdd={this.handleAddEvent.bind(this)} onRowDel={this.handleRowDel.bind(this)}
                               products={this.state.products} filterText={this.state.filterText}
-
+                              settings={this.props.settings}
                 />
             </div>
         );
@@ -114,9 +88,10 @@ class ProductTable extends React.Component {
         var rowDel = this.props.onRowDel;
         let rowAdd = this.props.onRowAdd
         var filterText = this.props.filterText;
+        let settings = this.props.settings
         var product
         let volumeArr
-        let final_quantity = 0, final_weight = 0, final_volume = 0
+        let final_quantity = 0, final_weight = 0, final_volume = ''
         const {products} = this.props
         if (products !== undefined) {
             product = this.props.products.map(function (product) {
@@ -125,13 +100,13 @@ class ProductTable extends React.Component {
                     product={product}
                     onDelEvent={rowDel.bind(this)}
                     key={product.id}
+                    settings={settings}
                     rowAdd={rowAdd.bind(this)}
                 />)
-
             });
 
             volumeArr = products.map(item => {
-                return volume(item.width, item.height, item.length, item.weight)
+                return volume(item.width, item.height, item.length, item.weight, settings.tariff_summ)
             })
 
             for (let i = 0; i < products.length; i++) {
@@ -205,17 +180,17 @@ class ProductTable extends React.Component {
 
 }
 
-function volume(width, height, length, weight) {
+function volume(width, height, length, weight, tariff_summ) {
     let volume = 0;
     let result = ''
-    if (width > 0 && height > 0 && length > 0 && weight > 0) {
+    if (width > 0 && height > 0 && length > 0 && tariff_summ > 0 && tariff_summ !== undefined) {
         // console.log('asas')
-        volume = width * height * length / 6000;
-        if (volume > weight) {
-            result = Math.ceil(volume)
-        } else {
-            result = Math.ceil(weight)
-        }
+        volume = width * height * length / parseInt(tariff_summ);
+        result = volume&&volume.toFixed(2)
+        // if (volume > weight) {
+        // } else {
+        //     result = Math.ceil(weight)
+        // }
     }
     return result
 }
@@ -228,20 +203,7 @@ class ProductRow extends React.Component {
 
     render() {
         const {width, height, length, weight} = this.props.product
-        let result = volume(width, height, length, weight)
-        // let volume = 0;
-        // let result = ''
-        // if (width > 0 && height > 0 && length > 0 && weight > 0) {
-        //     // console.log('asas')
-        //     volume = width * height * length / 6000;
-        //     if (volume > weight) {
-        //         result = Math.ceil(volume)
-        //     } else {
-        //         result = Math.ceil(weight)
-        //     }
-        // }
-
-        // console.log('Summ ', this.totalSumm(result))
+        let result = volume(width, height, length, weight, this.props.settings.tariff_summ)
         return (
             <tr className="eachRow">
                 <EditableCell onProductTableUpdate={this.props.onProductTableUpdate} cellData={{
@@ -281,7 +243,7 @@ class ProductRow extends React.Component {
                     id: this.props.product.id
                 }}/>
                 <td className="del-cell">
-                    <input type="button" onClick={this.onDelEvent.bind(this)} value="x" className="del-btn"/>
+                    <input type="button" onClick={this.onDelEvent.bind(this)} value="x" className="del-input"/>
                 </td>
             </tr>
 
@@ -309,9 +271,9 @@ class EditableCell extends React.Component {
 
 const mapsStateToProps = state => {
     return {
-        // products: state.orderProduct.products,
+        products: state.invoice_reducer.products,
         tarifList: state.orderProduct.tarifList,
-        methodList: state.orderProduct.methodList
+        settings: state.orderProduct.settings
     }
 }
 const mapsDispatchProps = dispatch => {
